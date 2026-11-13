@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tap to Review - Pengalihan Cepat</title>
+  <!-- Memanggil Library Supabase via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <style>
+    /* Desain UI Minimalis Bergaya Startup (Mobile-First) */
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background-color: #f8fafc; color: #0f172a; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+    .card { background: #ffffff; width: 100%; max-width: 400px; padding: 32px 24px; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01); text-align: center; }
+    
+    /* Animasi Loading Spinner untuk Auto-Redirect */
+    .spinner { width: 42px; height: 42px; border: 4px solid #e2e8f0; border-top-color: #2563eb; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    
+    h1 { font-size: 20px; font-weight: 700; margin-bottom: 8px; color: #1e293b; }
+    p { font-size: 14px; color: #64748b; margin-bottom: 24px; line-height: 1.5; }
+    
+    /* Styling Form Setup */
+    .form-group { text-align: left; margin-bottom: 16px; }
+    label { display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 6px; }
+    input { width: 100%; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 14px; transition: all 0.2s; outline: none; }
+    input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+    
+    button { width: 100%; background-color: #2563eb; color: #ffffff; font-weight: 600; font-size: 15px; padding: 12px; border: none; border-radius: 10px; cursor: pointer; transition: background 0.2s; margin-top: 8px; }
+    button:hover { background-color: #1d4ed8; }
+    button:disabled { background-color: #94a3b8; cursor: not-allowed; }
+    
+    .badge { display: inline-block; background: #eff6ff; color: #2563eb; font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 999px; margin-bottom: 12px; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <!-- TAMPILAN 1: Loading / Mengarahkan ke Google Maps -->
+    <div id="loading-view">
+      <div class="spinner"></div>
+      <h1 id="loading-title">Mengarahkan ke Google Maps...</h1>
+      <p id="loading-desc">Mohon tunggu sebentar, sedang membuka halaman ulasan.</p>
+    </div>
+
+    <!-- TAMPILAN 2: Form Setup (Muncul jika kartu masih kosong) -->
+    <div id="setup-view" class="hidden">
+      <span class="badge" id="card-badge">ID Kartu: -</span>
+      <h1>Aktivasi Kartu NFC</h1>
+      <p>Kartu ini belum diatur. Masukkan link Google Maps Review bisnis Anda dan buat PIN keamanan.</p>
+      
+      <form id="setup-form">
+        <div class="form-group">
+          <label for="target-url">Link Google Maps Review</label>
+          <input type="url" id="target-url" placeholder="https://search.google.com/local/writereview?placeid=..." required>
+        </div>
+        
+        <div class="form-group">
+          <label for="pin">Buat PIN Keamanan (4 Digit Angka)</label>
+          <input type="password" id="pin" placeholder="Contoh: 1234" pattern="[0-9]{4}" maxlength="4" inputmode="numeric" required>
+        </div>
+        
+        <button type="submit" id="save-btn">Simpan & Aktifkan Kartu</button>
+      </form>
+    </div>
+
+    <!-- TAMPILAN 3: Pesan Error (Jika ID tidak ditemukan/kosong) -->
+    <div id="error-view" class="hidden">
+      <h1>Kartu Tidak Dikenali</h1>
+      <p id="error-message">Pastikan Anda melakukan scan atau tap pada kartu NFC yang terdaftar.</p>
+    </div>
+  </div>
+
+  <script>
+    // ====================================================================
+    // KONEKSI SUPABASE ANWAR (SUDAH TERINTEGRASI OTOMATIS)
+    // ====================================================================
+    const SUPABASE_URL = 'https://gsgtjtcapiowbblxtegz.supabase.co'; 
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdzZ3RqdGNhcGlvd2JibHh0ZWd6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ1MDk2OTQsImV4cCI6MjExMDA4NTY5NH0.F-QhgvUILdKsw6axWehioj0-1HnexST87zRkjgBAMxo';
+    
+    // Inisialisasi koneksi ke Supabase
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // Mengambil elemen-elemen HTML
+    const loadingView = document.getElementById('loading-view');
+    const setupView = document.getElementById('setup-view');
+    const errorView = document.getElementById('error-view');
+    const errorMessage = document.getElementById('error-message');
+    const cardBadge = document.getElementById('card-badge');
+    const setupForm = document.getElementById('setup-form');
+    const saveBtn = document.getElementById('save-btn');
+
+    // 1. Ambil parameter ?id= dari alamat URL browser
+    const urlParams = new URLSearchParams(window.location.search);
+    const cardId = urlParams.get('id');
+
+    // Fungsi Utama yang berjalan otomatis saat halaman dibuka
+    async function checkCardStatus() {
+      // Jika URL dibuka tanpa ?id=...
+      if (!cardId) {
+        showError('Parameter ID kartu tidak ditemukan di URL. Tambahkan <b>?id=001</b> atau <b>?id=002</b> di ujung alamat browser Anda.');
+        return;
+      }
+
+      try {
+        // 2. Tarik data dari tabel nfc_cards berdasarkan id
+        const { data, error } = await supabaseClient
+          .from('nfc_cards')
+          .select('id, target_url')
+          .eq('id', cardId)
+          .single();
+
+        if (error || !data) {
+          showError(`Kartu dengan ID <b>"${cardId}"</b> belum terdaftar di dalam sistem database.`);
+          return;
+        }
+
+        // 3. KONDISI 2 (BERISI): Jika target_url sudah ada isinya -> Langsung Auto-Redirect!
+        if (data.target_url && data.target_url.trim() !== '') {
+          window.location.replace(data.target_url);
+        } 
+        // 4. KONDISI 1 (KOSONG): Jika target_url masih NULL/kosong -> Tampilkan Form Setup!
+        else {
+          loadingView.classList.add('hidden');
+          cardBadge.textContent = `ID Kartu: ${data.id}`;
+          setupView.classList.remove('hidden');
+        }
+
+      } catch (err) {
+        showError('Terjadi gangguan koneksi ke database.');
+        console.error(err);
+      }
+    }
+
+    // Fungsi saat tombol "Simpan & Aktifkan Kartu" diklik
+    setupForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const targetUrlInput = document.getElementById('target-url').value.trim();
+      const pinInput = document.getElementById('pin').value.trim();
+
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Menyimpan Data...';
+
+      try {
+        // Update data link Maps dan PIN ke Supabase untuk ID tersebut
+        const { error } = await supabaseClient
+          .from('nfc_cards')
+          .update({ 
+            target_url: targetUrlInput, 
+            pin: pinInput 
+          })
+          .eq('id', cardId);
+
+        if (error) throw error;
+
+        // Jika berhasil disimpan, langsung arahkan ke Google Maps tujuan!
+        alert('Kartu berhasil diaktifkan! Anda akan diarahkan ke halaman tujuan.');
+        window.location.replace(targetUrlInput);
+
+      } catch (err) {
+        alert('Gagal menyimpan pengaturan kartu. Silakan coba lagi.');
+        console.error(err);
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Simpan & Aktifkan Kartu';
+      }
+    });
+
+    // Fungsi pembantu untuk menampilkan pesan error
+    function showError(msg) {
+      loadingView.classList.add('hidden');
+      setupView.classList.add('hidden');
+      errorMessage.innerHTML = msg;
+      errorView.classList.remove('hidden');
+    }
+
+    // Jalankan pengecekan saat web dibuka
+    checkCardStatus();
+  </script>
+</body>
+</html>
