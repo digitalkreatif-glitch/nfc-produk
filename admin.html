@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Produksi NFC & QR</title>
+  
+  <!-- 1. Library Supabase via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- 2. Library QRCode.js via CDN (Untuk membuat gambar QR Code) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- 3. Library jsPDF via CDN (Untuk menyusun dokumen PDF ukuran A4) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: #f1f5f9; color: #0f172a; padding: 24px; }
+    .container { max-width: 1000px; margin: 0 auto; }
+    
+    /* Layar Login Sederhana */
+    .login-box { background: #fff; max-width: 380px; margin: 80px auto; padding: 32px 24px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; }
+    .login-box h2 { margin-bottom: 8px; font-size: 20px; }
+    .login-box p { color: #64748b; font-size: 13px; margin-bottom: 20px; }
+    input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 14px; margin-bottom: 12px; outline: none; }
+    input:focus { border-color: #2563eb; }
+
+    /* Header & Tombol Aksi */
+    .header { background: #fff; padding: 20px 24px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 20px; }
+    .header h1 { font-size: 20px; color: #1e293b; }
+    .header p { font-size: 13px; color: #64748b; margin-top: 4px; }
+    
+    .btn { background: #2563eb; color: #fff; border: none; padding: 12px 18px; border-radius: 10px; font-weight: 600; font-size: 14px; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+    .btn:hover { background: #1d4ed8; }
+    .btn:disabled { background: #94a3b8; cursor: not-allowed; }
+    .btn-secondary { background: #e2e8f0; color: #334155; }
+    .btn-secondary:hover { background: #cbd5e1; }
+    .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 6px; }
+
+    /* Statistik Ringkas */
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px; }
+    .stat-card { background: #fff; padding: 18px 20px; border-radius: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+    .stat-card span { font-size: 12px; color: #64748b; font-weight: 600; text-transform: uppercase; }
+    .stat-card h3 { font-size: 28px; margin-top: 6px; color: #0f172a; }
+
+    /* Tabel Data Kartu */
+    .table-box { background: #fff; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+    th { background: #f8fafc; padding: 14px 16px; font-weight: 600; color: #475569; border-bottom: 1px solid #e2e8f0; }
+    td { padding: 14px 16px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+    .badge-active { background: #dcfce7; color: #15803d; padding: 4px 10px; border-radius: 99px; font-size: 12px; font-weight: 600; }
+    .badge-empty { background: #fef9c3; color: #a16207; padding: 4px 10px; border-radius: 99px; font-size: 12px; font-weight: 600; }
+    .url-cell { max-width: 260px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #2563eb; }
+    
+    .hidden { display: none !important; }
+    /* Tempat tersembunyi untuk merender QR Code sebelum masuk ke PDF */
+    #qr-hidden-container { position: absolute; left: -9999px; top: -9999px; }
+  </style>
+</head>
+<body>
+
+  <!-- LAYAR 1: LOGIN ADMIN (Password Default: admin123) -->
+  <div id="login-view" class="login-box">
+    <h2>🔒 Web Admin NFC</h2>
+    <p>Masukkan password operasional untuk mengelola produksi kartu & cetak QR.</p>
+    <form id="login-form">
+      <input type="password" id="admin-pass" placeholder="Password Admin (Ketik: admin123)" required>
+      <button type="submit" class="btn" style="width: 100%; justify-content: center;">Masuk ke Dashboard</button>
+    </form>
+  </div>
+
+  <!-- LAYAR 2: DASHBOARD UTAMA -->
+  <div id="dashboard-view" class="container hidden">
+    <div class="header">
+      <div>
+        <h1>🚀 Dapur Produksi NFC & QR Code</h1>
+        <p id="domain-info">Portal Klien: -</p>
+      </div>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <button id="refresh-btn" class="btn btn-secondary">🔄 Refresh Data</button>
+        <button id="generate-btn" class="btn">⚡ Generate 10 Kartu Baru + PDF</button>
+      </div>
+    </div>
+
+    <!-- Kotak Statistik -->
+    <div class="stats">
+      <div class="stat-card">
+        <span>Total Kartu Diproduksi</span>
+        <h3 id="stat-total">0</h3>
+      </div>
+      <div class="stat-card">
+        <span>Sudah Aktif (Terisi Maps)</span>
+        <h3 id="stat-active" style="color: #16a34a;">0</h3>
+      </div>
+      <div class="stat-card">
+        <span>Stok Kosong (Siap Jual)</span>
+        <h3 id="stat-empty" style="color: #ca8a04;">0</h3>
+      </div>
+    </div>
+
+    <!-- Tabel Daftar Kartu -->
+    <div class="table-box">
+      <table>
+        <thead>
+          <tr>
+            <th>ID Kartu</th>
+            <th>Status</th>
+            <th>PIN</th>
+            <th>Link Google Maps (Target URL)</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="cards-tbody">
+          <tr><td colspan="5" style="text-align: center; padding: 30px;">Memuat data dari Supabase...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Kontainer Tersembunyi untuk Pembuatan Gambar QR -->
+  <div id="qr-hidden-container"></div>
+
+  <script>
+    // ====================================================================
+    // KONEKSI SUPABASE ANWAR (SUDAH TERINTEGRASI OTOMATIS)
+    // ====================================================================
+    const SUPABASE_URL = 'https://gsgtjtcapiowbblxtegz.supabase.co'; 
+    const SUPABASE_KEY = 'sb_publishable_jcYbTT9-gM5Ya-_u35WpDQ_fXhWQClK';
+    const ADMIN_PASSWORD = 'admin123'; // Bisa lu ganti kapan aja
+
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // Otomatis mendeteksi alamat website utama (misal: https://nfc-produk.vercel.app)
+    const BASE_CLIENT_URL = window.location.origin + '/';
+    document.getElementById('domain-info').textContent = `Domain Klien Aktif: ${BASE_CLIENT_URL}`;
+
+    const loginView = document.getElementById('login-view');
+    const dashboardView = document.getElementById('dashboard-view');
+    const loginForm = document.getElementById('login-form');
+    const cardsTbody = document.getElementById('cards-tbody');
+    const generateBtn = document.getElementById('generate-btn');
+    const refreshBtn = document.getElementById('refresh-btn');
+    const qrContainer = document.getElementById('qr-hidden-container');
+
+    let allCardsData = [];
+
+    // 1. Logika Login Sederhana
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const pass = document.getElementById('admin-pass').value;
+      if (pass === ADMIN_PASSWORD) {
+        loginView.classList.add('hidden');
+        dashboardView.classList.remove('hidden');
+        loadCards();
+      } else {
+        alert('Password salah! Gunakan: admin123');
+      }
+    });
+
+    // 2. Fungsi Memuat Semua Kartu dari Supabase
+    async function loadCards() {
+      cardsTbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 30px;">Memuat data dari Supabase...</td></tr>';
+      
+      const { data, error } = await supabaseClient
+        .from('nfc_cards')
+        .select('*')
+        .order('id', { ascending: true });
+
+      if (error) {
+        alert('Gagal mengambil data: ' + error.message);
+        return;
+      }
+
+      allCardsData = data || [];
+      renderTable(allCardsData);
+    }
+
+    // 3. Menampilkan Data ke Tabel & Menghitung Statistik
+    function renderTable(cards) {
+      document.getElementById('stat-total').textContent = cards.length;
+      const activeCount = cards.filter(c => c.target_url && c.target_url.trim() !== '').length;
+      document.getElementById('stat-active').textContent = activeCount;
+      document.getElementById('stat-empty').textContent = cards.length - activeCount;
+
+      if (cards.length === 0) {
+        cardsTbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 30px;">Belum ada data kartu.</td></tr>';
+        return;
+      }
+
+      cardsTbody.innerHTML = cards.map(card => {
+        const isConfigured = card.target_url && card.target_url.trim() !== '';
+        const statusBadge = isConfigured 
+          ? '<span class="badge-active">Aktif</span>' 
+          : '<span class="badge-empty">Kosong</span>';
+        const fullTapUrl = `${BASE_CLIENT_URL}?id=${card.id}`;
+
+        return `
+          <tr>
+            <td><b>${card.id}</b></td>
+            <td>${statusBadge}</td>
+            <td>${card.pin || '-'}</td>
+            <td class="url-cell">
+              ${isConfigured ? `<a href="${card.target_url}" target="_blank">${card.target_url}</a>` : '<span style="color:#94a3b8;">Belum disetting</span>'}
+            </td>
+            <td style="display: flex; gap: 6px;">
+              <button class="btn btn-secondary btn-sm" onclick="editCard('${card.id}', '${card.pin || ''}', '${card.target_url || ''}')">✏️ Edit / Reset</button>
+              <button class="btn btn-secondary btn-sm" onclick="printSingleQR('${card.id}')">🖨️ PDF QR</button>
+              <a href="${fullTapUrl}" target="_blank" class="btn btn-secondary btn-sm" style="text-decoration:none;">🔗 Tes</a>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // 4. Fitur Edit / Reset Kartu ("Layanan Terima Beres")
+    window.editCard = async function(id, currentPin, currentUrl) {
+      const newUrl = prompt(`Masukkan Link Google Maps untuk Kartu ID [${id}]:\n(Kosongkan jika ingin mereset kartu menjadi baru)`, currentUrl);
+      if (newUrl === null) return; // Batal
+
+      let newPin = currentPin;
+      if (newUrl.trim() !== '') {
+        newPin = prompt(`Masukkan PIN 4 Digit untuk Kartu ID [${id}]:`, currentPin || '1234');
+        if (newPin === null) return;
+      } else {
+        newPin = null; // Reset PIN jika URL dikosongkan
+      }
+
+      const { error } = await supabaseClient
+        .from('nfc_cards')
+        .update({ 
+          target_url: newUrl.trim() === '' ? null : newUrl.trim(),
+          pin: newPin
+        })
+        .eq('id', id);
+
+      if (error) {
+        alert('Gagal mengupdate kartu: ' + error.message);
+      } else {
+        loadCards();
+      }
+    };
+
+    // 5. Fitur Utama: Generate 10 Kartu Baru Otomatis + Export PDF A4
+    generateBtn.addEventListener('click', async () => {
+      generateBtn.disabled = true;
+      generateBtn.textContent = '⏳ Memproses 10 Kartu & PDF...';
+
+      try {
+        // Cari angka ID tertinggi saat ini agar berurutan otomatis
+        let maxNum = 0;
+        allCardsData.forEach(c => {
+          const num = parseInt(c.id, 10);
+          if (!isNaN(num) && num > maxNum) maxNum = num;
+        });
+
+        const newCardsBatch = [];
+        for (let i = 1; i <= 10; i++) {
+          const nextNum = maxNum + i;
+          // Format 3 digit angka (Contoh: 003, 004 ... 012)
+          const formattedId = String(nextNum).padStart(3, '0');
+          newCardsBatch.push({ id: formattedId, pin: null, target_url: null });
+        }
+
+        // Insert 10 baris baru ke Supabase sekaligus
+        const { error } = await supabaseClient
+          .from('nfc_cards')
+          .insert(newCardsBatch);
+
+        if (error) throw error;
+
+        // Buat dan Download PDF ukuran A4 berisi 10 QR Code tersebut
+        await createPrintablePDF(newCardsBatch.map(c => c.id));
+
+        alert(`Berhasil membuat 10 kartu baru (ID ${newCardsBatch[0].id} s/d ${newCardsBatch[9].id}) dan mengunduh PDF!`);
+        loadCards();
+
+      } catch (err) {
+        alert('Terjadi kesalahan saat generate kartu: ' + err.message);
+        console.error(err);
+      } finally {
+        generateBtn.disabled = false;
+        generateBtn.textContent = '⚡ Generate 10 Kartu Baru + PDF';
+      }
+    });
+
+    // Tombol cetak ulang PDF untuk 1 kartu tertentu
+    window.printSingleQR = async function(id) {
+      await createPrintablePDF([id]);
+    };
+
+    // 6. Fungsi Merakit Gambar QRCode.js & Menyusun ke PDF A4 (jsPDF)
+    async function createPrintablePDF(cardIds) {
+      const { jsPDF } = window.jspdf;
+      // Format A4 Portrait (210mm x 297mm)
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+      // Judul Lembar Cetak di bagian atas kertas A4
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(14);
+      doc.text('LEMBAR CETAK PRODUKSI QR CODE NFC (A4)', 105, 14, { align: 'center' });
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.text(`Domain Tujuan: ${BASE_CLIENT_URL}  |  Gunting mengikuti garis putus-putus`, 105, 20, { align: 'center' });
+
+      // Tata Letak Grid A4: 2 Kolom x 5 Baris (Pas 10 Kartu per halaman A4)
+      const startX = 20;
+      const startY = 26;
+      const boxWidth = 80;
+      const boxHeight = 50;
+      const gapX = 10;
+      const gapY = 3;
+
+      for (let i = 0; i < cardIds.length; i++) {
+        const id = cardIds[i];
+        const fullUrl = `${BASE_CLIENT_URL}?id=${id}`;
+
+        // Hitung posisi kolom (0 atau 1) dan baris (0 s/d 4)
+        const col = i % 2;
+        const row = Math.floor(i / 2);
+        const x = startX + col * (boxWidth + gapX);
+        const y = startY + row * (boxHeight + gapY);
+
+        // Gambar kotak batas potong untuk stiker/akrilik
+        doc.setDrawColor(180, 180, 180);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(x, y, boxWidth, boxHeight, 3, 3, 'S');
+
+        // Buat gambar QR Code di memori browser menggunakan QRCode.js
+        const qrDataUrl = await generateQRDataURL(fullUrl);
+
+        // Tempelkan gambar QR di sebelah kiri dalam kotak (Ukuran 36x36 mm)
+        doc.addImage(qrDataUrl, 'PNG', x + 5, y + 7, 36, 36);
+
+        // Tambahkan Keterangan ID & Panduan Produksi di sebelah kanan QR
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(13);
+        doc.setTextColor(15, 23, 42);
+        doc.text(`ID KARTU: ${id}`, x + 44, y + 16);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(100, 116, 139);
+        doc.text('SCAN / TAP UNTUK ULASAN', x + 44, y + 22);
+        doc.text('Link Write NFC Tools:', x + 44, y + 31);
+        
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(7.5);
+        doc.setTextColor(37, 99, 235);
+        doc.text(`?id=${id}`, x + 44, y + 36);
+      }
+
+      // Download otomatis file PDF-nya
+      const fileName = cardIds.length === 1 
+        ? `QR-Kartu-${cardIds[0]}.pdf` 
+        : `Produksi-10-QR-${cardIds[0]}-sd-${cardIds[cardIds.length - 1]}.pdf`;
+      doc.save(fileName);
+    }
+
+    // Fungsi Pembantu: Mengubah elemen QRCode.js menjadi Data Gambar Base64
+    function generateQRDataURL(urlText) {
+      return new Promise((resolve) => {
+        qrContainer.innerHTML = '';
+        const tempDiv = document.createElement('div');
+        qrContainer.appendChild(tempDiv);
+
+        new QRCode(tempDiv, {
+          text: urlText,
+          width: 300,
+          height: 300,
+          colorDark: '#000000',
+          colorLight: '#ffffff',
+          correctLevel: QRCode.CorrectLevel.H
+        });
+
+        // Tunggu 60 milidetik agar canvas/img selesai dirender oleh QRCode.js
+        setTimeout(() => {
+          const img = tempDiv.querySelector('img');
+          const canvas = tempDiv.querySelector('canvas');
+          if ( canvas ) {
+            resolve(canvas.toDataURL('image/png'));
+          } else if (img && img.src) {
+            resolve(img.src);
+          }
+        }, 60);
+      });
+    }
+
+    refreshBtn.addEventListener('click', loadCards);
+  </script>
+</body>
+</html>
