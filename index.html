@@ -3,39 +3,53 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tap to Review - Portal Resmi</title>
+  <title>Tap to Review - Aktivasi & Portal</title>
   <!-- Library Supabase via CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-    body { background-color: #f8fafc; color: #0f172a; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-    .card { background: #ffffff; width: 100%; max-width: 420px; padding: 32px 24px; border-radius: 18px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.06); text-align: center; position: relative; }
+    body { background-color: #f8fafc; color: #0f172a; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 16px; }
+    .card { background: #ffffff; width: 100%; max-width: 440px; padding: 28px 22px; border-radius: 20px; box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.06); text-align: center; }
     
     .spinner { width: 44px; height: 44px; border: 4px solid #e2e8f0; border-top-color: #2563eb; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
     @keyframes spin { to { transform: rotate(360deg); } }
     
-    h1 { font-size: 20px; font-weight: 700; margin-bottom: 8px; color: #1e293b; }
-    p { font-size: 14px; color: #64748b; margin-bottom: 20px; line-height: 1.5; }
+    h1 { font-size: 20px; font-weight: 700; margin-bottom: 6px; color: #1e293b; }
+    p { font-size: 13.5px; color: #64748b; margin-bottom: 18px; line-height: 1.5; }
     
-    .form-group { text-align: left; margin-bottom: 16px; }
-    label { display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 6px; }
-    input { width: 100%; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 14px; transition: all 0.2s; outline: none; }
+    .step-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px; margin-bottom: 16px; text-align: left; }
+    .step-title { font-size: 12px; font-weight: 700; color: #2563eb; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; display: block; }
+    
+    .search-row { display: flex; gap: 8px; }
+    input { width: 100%; padding: 11px 13px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 14px; outline: none; transition: 0.2s; background: #fff; }
     input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
     
-    .helper-box { background: #f1f5f9; border: 1px dashed #cbd5e1; padding: 12px; border-radius: 10px; margin-bottom: 16px; text-align: left; font-size: 12px; color: #475569; line-height: 1.4; }
-    .helper-box a { color: #2563eb; font-weight: 600; text-decoration: none; }
-    .helper-box input { margin-top: 6px; padding: 8px 10px; font-size: 12px; background: #fff; }
+    .btn { width: 100%; background-color: #2563eb; color: #ffffff; font-weight: 600; font-size: 14px; padding: 12px; border: none; border-radius: 10px; cursor: pointer; transition: 0.2s; }
+    .btn:hover { background-color: #1d4ed8; }
+    .btn:disabled { background-color: #94a3b8; cursor: not-allowed; }
+    .btn-search { width: auto; white-space: nowrap; padding: 0 16px; background: #0f172a; }
+    .btn-search:hover { background: #334155; }
     
-    button { width: 100%; background-color: #2563eb; color: #ffffff; font-weight: 600; font-size: 15px; padding: 12px; border: none; border-radius: 10px; cursor: pointer; transition: 0.2s; margin-top: 6px; }
-    button:hover { background-color: #1d4ed8; }
-    button:disabled { background-color: #94a3b8; cursor: not-allowed; }
+    /* Kotak Pratinjau Peta & Alamat Toko */
+    .preview-card { background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 12px; padding: 12px; margin-top: 12px; text-align: left; }
+    .preview-header { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+    .preview-icon { font-size: 22px; line-height: 1; }
+    .preview-title { font-size: 14px; font-weight: 700; color: #1e3a8a; }
+    .preview-addr { font-size: 12px; color: #475569; margin-top: 2px; }
+    .map-frame { width: 100%; height: 150px; border: 0; border-radius: 8px; background: #e2e8f0; }
     
-    .btn-outline { background: transparent; color: #64748b; border: 1px solid #e2e8f0; font-size: 12px; padding: 8px 14px; margin-top: 20px; width: auto; display: inline-block; }
+    .status-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 600; padding: 4px 10px; border-radius: 99px; margin-top: 8px; }
+    .pill-success { background: #dcfce7; color: #15803d; }
+    .pill-info { background: #fef9c3; color: #a16207; }
+
+    .btn-outline { background: transparent; color: #64748b; border: 1px solid #cbd5e1; font-size: 12px; padding: 8px 14px; margin-top: 18px; width: auto; display: inline-block; border-radius: 8px; cursor: pointer; }
     .btn-outline:hover { background: #f1f5f9; color: #0f172a; }
     
-    .badge { display: inline-block; background: #eff6ff; color: #2563eb; font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 999px; margin-bottom: 12px; }
+    .badge { display: inline-block; background: #eff6ff; color: #2563eb; font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 999px; margin-bottom: 10px; }
     .hidden { display: none !important; }
+    
+    .advanced-toggle { font-size: 11.5px; color: #64748b; text-decoration: underline; cursor: pointer; display: inline-block; margin-top: 8px; }
     .quick-links { margin-top: 20px; padding-top: 16px; border-top: 1px dashed #e2e8f0; display: flex; gap: 8px; justify-content: center; }
     .quick-btn { display: inline-block; background: #f1f5f9; color: #334155; text-decoration: none; font-size: 12px; font-weight: 600; padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1; }
   </style>
@@ -43,57 +57,84 @@
 <body>
 
   <div class="card">
-    <!-- TAMPILAN 1: Loading & Auto-Redirect (Dilengkapi Tombol Edit Pemilik Toko) -->
+    <!-- TAMPILAN 1: Loading & Auto-Redirect -->
     <div id="loading-view">
       <div class="spinner"></div>
-      <h1 id="loading-title">Mengarahkan ke Google Maps...</h1>
-      <p id="loading-desc">Membuka halaman ulasan bintang 5 dalam sekejap.</p>
+      <h1 id="loading-title">Mengarahkan ke Ulasan...</h1>
+      <p id="loading-desc">Membuka halaman Google Maps Review bintang 5.</p>
       
-      <!-- Muncul saat kartu sudah berisi, memberi kesempatan pemilik toko klik jika ingin ganti link -->
       <button type="button" id="owner-edit-btn" class="btn-outline hidden">
-        ⚙️ Pemilik Bisnis? Ubah Link / Pengaturan
+        ⚙️ Pemilik Toko? Ubah Lokasi / PIN
       </button>
     </div>
 
-    <!-- TAMPILAN 2: Form Setup Kartu Baru ATAU Edit Kartu Pakai PIN -->
+    <!-- TAMPILAN 2: Wizard Setup Toko (Cukup Ketik Nama Toko!) -->
     <div id="setup-view" class="hidden">
       <span class="badge" id="card-badge">ID Kartu: -</span>
-      <h1 id="form-title">Aktivasi Kartu NFC</h1>
-      <p id="form-desc">Kartu ini belum diatur. Masukkan link Google Maps Review bisnis Anda dan buat PIN keamanan.</p>
-      
-      <!-- Kotak Bantuan Rangkai Place ID Otomatis -->
-      <div class="helper-box">
-        💡 <b>Tips Mudah:</b> Punya kode <i>Place ID</i> toko Anda? Tempel kodenya di bawah ini agar otomatis menjadi link bintang 5, atau cari di <a href="https://developers.google.com/maps/documentation/places/web-service/place-id" target="_blank">Google Place ID Finder ↗</a>
-        <input type="text" id="place-id-helper" placeholder="Tempel Place ID (Contoh: ChIJo-cPEKX1aS4...)">
-      </div>
+      <h1 id="form-title">Aktivasi Kartu Review</h1>
+      <p id="form-desc">Ketik nama bisnis Anda di Google Maps, pastikan titik petanya sesuai, lalu kunci dengan PIN.</p>
 
       <form id="setup-form">
-        <!-- Muncul HANYA jika kartu sudah aktif dan pemilik mau mengubah link -->
-        <div class="form-group hidden" id="old-pin-group">
-          <label for="old-pin" style="color: #dc2626;">🔒 Masukkan PIN Keamanan Lama (4 Digit)</label>
-          <input type="password" id="old-pin" placeholder="Masukkan PIN kartu saat ini" maxlength="4" inputmode="numeric">
+        <!-- Muncul hanya saat pemilik ingin ubah lokasi pada kartu yang sudah aktif -->
+        <div class="step-box hidden" id="old-pin-group" style="border-color: #fca5a5; background: #fef2f2;">
+          <span class="step-title" style="color: #dc2626;">🔒 Verifikasi Pemilik</span>
+          <input type="password" id="old-pin" placeholder="Masukkan 4 Digit PIN Lama Anda" maxlength="4" inputmode="numeric">
         </div>
 
-        <div class="form-group">
-          <label for="target-url">Link Tujuan (Google Maps Review / Profil)</label>
-          <input type="url" id="target-url" placeholder="https://search.google.com/local/writereview?placeid=..." required>
+        <!-- TAHAP 1: Ketik & Cari Nama Toko -->
+        <div class="step-box">
+          <span class="step-title">Langkah 1: Cari Bisnis Anda</span>
+          <div class="search-row">
+            <input type="text" id="store-search-input" placeholder="Contoh: CoffeeTalk Sunter Kemayoran" autocomplete="off">
+            <button type="button" id="search-store-btn" class="btn btn-search">🔍 Cari</button>
+          </div>
+
+          <!-- Pratinjau Peta & Konfirmasi Alamat (Muncul Otomatis Setelah Klik Cari) -->
+          <div id="store-preview-box" class="preview-card hidden">
+            <div class="preview-header">
+              <span class="preview-icon">📍</span>
+              <div>
+                <div class="preview-title" id="preview-store-name">Nama Toko</div>
+                <div class="preview-addr" id="preview-store-addr">Pratinjau lokasi Google Maps</div>
+              </div>
+            </div>
+            <!-- Peta Google Maps Interaktif -->
+            <iframe id="map-preview-frame" class="map-frame" loading="lazy" allowfullscreen></iframe>
+            
+            <div id="link-status-badge" class="status-pill pill-success">
+              ✅ Lokasi ditemukan! Siap dihubungkan ke kartu.
+            </div>
+          </div>
+
+          <!-- Opsi Tempel Link / Pop-up Review Langsung (Jika ingin 100% Pop-up Bintang 5) -->
+          <div style="margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">
+            <span class="advanced-toggle" id="toggle-manual-btn">🔗 Punya Link / Kode Khusus?</span>
+            <a href="https://developers.google.com/maps/documentation/places/web-service/place-id" target="_blank" class="advanced-toggle" style="color:#2563eb;">Cari Kode Pop-up 5★ ↗</a>
+          </div>
+
+          <div id="manual-url-box" class="hidden" style="margin-top: 10px;">
+            <input type="text" id="raw-link-input" placeholder="Tempel Link Google Maps atau Place ID (ChIJ...)" style="font-size: 12px;">
+          </div>
         </div>
-        
-        <div class="form-group">
-          <label for="pin" id="pin-label">Buat PIN Keamanan Baru (4 Digit Angka)</label>
-          <input type="password" id="pin" placeholder="Contoh: 1234" pattern="[0-9]{4}" maxlength="4" inputmode="numeric" required>
+
+        <!-- TAHAP 2: Buat PIN 4 Digit & Simpan -->
+        <div class="step-box">
+          <span class="step-title" id="pin-step-title">Langkah 2: Kunci dengan PIN (4 Angka)</span>
+          <input type="password" id="pin" placeholder="Buat 4 angka PIN (Contoh: 1234)" pattern="[0-9]{4}" maxlength="4" inputmode="numeric" required>
         </div>
+
+        <!-- Input tersembunyi yang menyimpan URL Final ke Supabase -->
+        <input type="hidden" id="final-target-url">
         
-        <button type="submit" id="save-btn">Simpan & Aktifkan Kartu</button>
-        <button type="button" id="cancel-edit-btn" class="btn-outline hidden" style="width:100%; margin-top:8px;">Batal & Lanjut ke Maps</button>
+        <button type="submit" id="save-btn" class="btn" disabled>Simpan & Aktifkan Kartu Sekarang</button>
+        <button type="button" id="cancel-edit-btn" class="btn-outline hidden" style="width:100%; margin-top:8px;">Batal & Kembali ke Maps</button>
       </form>
     </div>
 
-    <!-- TAMPILAN 3: Pesan Error & Pintasan Testing -->
+    <!-- TAMPILAN 3: Error / Pintasan Testing -->
     <div id="error-view" class="hidden">
       <h1>Kartu Tidak Dikenali</h1>
       <p id="error-message">Pastikan Anda melakukan scan atau tap pada kartu NFC yang terdaftar.</p>
-      
       <div class="quick-links">
         <a href="?id=001" class="quick-btn">🚀 Tes ID 001</a>
         <a href="?id=002" class="quick-btn">🚀 Tes ID 002</a>
@@ -104,13 +145,18 @@
 
   <script>
     // ====================================================================
-    // KONEKSI SUPABASE ANWAR (SUDAH TERINTEGRASI OTOMATIS)
+    // 1. KONEKSI SUPABASE ANWAR
     // ====================================================================
     const SUPABASE_URL = 'https://gsgtjtcapiowbblxtegz.supabase.co'; 
     const SUPABASE_KEY = 'sb_publishable_jcYbTT9-gM5Ya-_u35WpDQ_fXhWQClK';
     
+    // OPSIONAL: Jika nanti kamu punya Google Maps API Key (Places API), tempel di bawah ini
+    // agar muncul dropdown otomatis yang menyedot Place ID (ChIJ...) secara instan!
+    const GOOGLE_MAPS_API_KEY = ''; 
+
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    // Elemen DOM
     const loadingView = document.getElementById('loading-view');
     const setupView = document.getElementById('setup-view');
     const errorView = document.getElementById('error-view');
@@ -122,8 +168,18 @@
     const cancelEditBtn = document.getElementById('cancel-edit-btn');
     const oldPinGroup = document.getElementById('old-pin-group');
     const oldPinInput = document.getElementById('old-pin');
-    const placeIdHelper = document.getElementById('place-id-helper');
-    const targetUrlInput = document.getElementById('target-url');
+
+    const storeSearchInput = document.getElementById('store-search-input');
+    const searchStoreBtn = document.getElementById('search-store-btn');
+    const storePreviewBox = document.getElementById('store-preview-box');
+    const previewStoreName = document.getElementById('preview-store-name');
+    const previewStoreAddr = document.getElementById('preview-store-addr');
+    const mapPreviewFrame = document.getElementById('map-preview-frame');
+    const linkStatusBadge = document.getElementById('link-status-badge');
+    const finalTargetUrl = document.getElementById('final-target-url');
+    const toggleManualBtn = document.getElementById('toggle-manual-btn');
+    const manualUrlBox = document.getElementById('manual-url-box');
+    const rawLinkInput = document.getElementById('raw-link-input');
     const pinInput = document.getElementById('pin');
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -133,14 +189,98 @@
     let redirectTimer = null;
     let isEditMode = false;
 
-    // Otomatis merangkai Place ID menjadi Link Review Bintang 5 Google Maps
-    placeIdHelper.addEventListener('input', (e) => {
-      const code = e.target.value.trim();
-      if (code.length > 5 && !code.startsWith('http')) {
-        targetUrlInput.value = `https://search.google.com/local/writereview?placeid=${code}`;
+    // 2. LOGIKA PENCARIAN TOKO & PRATINJAU PETA OTOMATIS
+    function triggerStoreSearch() {
+      const query = storeSearchInput.value.trim();
+      if (!query) {
+        alert('Ketik nama toko atau bisnis Anda terlebih dahulu!');
+        return;
+      }
+
+      // Tampilkan kotak pratinjau peta Google Maps langsung di layar!
+      storePreviewBox.classList.remove('hidden');
+      previewStoreName.textContent = query;
+      previewStoreAddr.textContent = 'Pastikan titik peta di bawah ini sesuai dengan lokasi bisnis Anda:';
+      
+      // Embed Peta Interaktif tanpa butuh API Key berbayar
+      const encodedQuery = encodeURIComponent(query);
+      mapPreviewFrame.src = `https://www.google.com/maps?q=${encodedQuery}&output=embed`;
+
+      // Cek apakah yang diketik adalah Place ID (ChIJ...) atau Nama Toko biasa
+      if (query.startsWith('ChIJ') || query.startsWith('Eh')) {
+        finalTargetUrl.value = `https://search.google.com/local/writereview?placeid=${query}`;
+        linkStatusBadge.className = 'status-pill pill-success';
+        linkStatusBadge.innerHTML = '⭐ Mode Pop-up Bintang 5 Aktif (Place ID Valid)';
+      } else if (query.startsWith('http://') || query.startsWith('https://')) {
+        finalTargetUrl.value = query;
+        linkStatusBadge.className = 'status-pill pill-success';
+        linkStatusBadge.innerHTML = '✅ Link Tujuan Kustom Aktif';
+      } else {
+        // Otomatis buatkan Link Pencarian Langsung Profil Bisnis Google Maps
+        finalTargetUrl.value = `https://www.google.com/maps/search/?api=1&query=${encodedQuery}`;
+        linkStatusBadge.className = 'status-pill pill-success';
+        linkStatusBadge.innerHTML = '✅ Lokasi Terkunci! Siap disimpan.';
+      }
+
+      saveBtn.disabled = false;
+    }
+
+    searchStoreBtn.addEventListener('click', triggerStoreSearch);
+    storeSearchInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        triggerStoreSearch();
       }
     });
 
+    // Jika pengguna menempelkan Place ID atau Link khusus di kotak manual
+    toggleManualBtn.addEventListener('click', () => {
+      manualUrlBox.classList.toggle('hidden');
+    });
+
+    rawLinkInput.addEventListener('input', (e) => {
+      const val = e.target.value.trim();
+      if (!val) return;
+
+      if (val.startsWith('ChIJ') && !val.includes(' ')) {
+        // Otomatis rangkai Place ID menjadi Link Pop-up Review Bintang 5!
+        finalTargetUrl.value = `https://search.google.com/local/writereview?placeid=${val}`;
+        linkStatusBadge.innerHTML = '⭐ Link Pop-up Ulasan Bintang 5 Siap!';
+        storePreviewBox.classList.remove('hidden');
+        saveBtn.disabled = false;
+      } else if (val.startsWith('http')) {
+        // Bersihkan huruf H besar jika ada (Anti-Error 404)
+        const cleanUrl = val.replace(/^Https:\/\//i, 'https://').replace(/^Http:\/\//i, 'http://');
+        finalTargetUrl.value = cleanUrl;
+        linkStatusBadge.innerHTML = '✅ Link Langsung Siap Disimpan!';
+        storePreviewBox.classList.remove('hidden');
+        saveBtn.disabled = false;
+      }
+    });
+
+    // Jika dikemudian hari Anwar mengisi GOOGLE_MAPS_API_KEY, aktifkan Autocomplete Resmi Google
+    if (GOOGLE_MAPS_API_KEY !== '') {
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places`;
+      script.onload = () => {
+        const autocomplete = new google.maps.places.Autocomplete(storeSearchInput, { types: ['establishment'] });
+        autocomplete.addListener('place_changed', () => {
+          const place = autocomplete.getPlace();
+          if (place && place.place_id) {
+            previewStoreName.textContent = place.name;
+            previewStoreAddr.textContent = place.formatted_address || '';
+            mapPreviewFrame.src = `https://www.google.com/maps?q=${encodeURIComponent(place.name + ' ' + (place.formatted_address || ''))}&output=embed`;
+            finalTargetUrl.value = `https://search.google.com/local/writereview?placeid=${place.place_id}`;
+            linkStatusBadge.innerHTML = '⭐ Otomatis Terhubung ke Pop-up Review Bintang 5!';
+            storePreviewBox.classList.remove('hidden');
+            saveBtn.disabled = false;
+          }
+        });
+      };
+      document.head.appendChild(script);
+    }
+
+    // 3. CEK STATUS KARTU DI SUPABASE SAAT DIAKSES
     async function checkCardStatus() {
       if (!cardId) {
         showError('Parameter ID kartu belum ada di URL. Pilih salah satu tombol simulasi di bawah ini:');
@@ -155,17 +295,16 @@
           .maybeSingle();
 
         if (error || !data) {
-          showError(`Kartu dengan ID <b>"${cardId}"</b> tidak ditemukan di dalam database.`);
+          showError(`Kartu dengan ID <b>"${cardId}"</b> tidak ditemukan di database.`);
           return;
         }
 
         currentCardData = data;
 
-        // KONDISI 2 (BERISI): Tampilkan tombol edit pemilik & redirect otomatis dalam 1.8 detik
+        // KONDISI 2 (SUDAH AKTIF): Redirect otomatis ke Google Maps dalam 1.5 detik
         if (data.target_url && data.target_url.trim() !== '') {
           ownerEditBtn.classList.remove('hidden');
           
-          // Jika URL diberi tambahan &edit=1, langsung buka form edit tanpa redirect
           if (urlParams.get('edit') === '1') {
             openOwnerEditMode();
             return;
@@ -173,9 +312,9 @@
 
           redirectTimer = setTimeout(() => {
             window.location.replace(data.target_url);
-          }, 1800);
+          }, 1500);
         } 
-        // KONDISI 1 (KOSONG): Langsung tampilkan Form Aktivasi Baru
+        // KONDISI 1 (MASIH KOSONG): Tampilkan Wizard Pencarian Toko
         else {
           isEditMode = false;
           loadingView.classList.add('hidden');
@@ -188,69 +327,70 @@
       }
     }
 
-    // Fungsi saat Pemilik Bisnis klik tombol "⚙️ Pemilik Bisnis? Ubah Link"
+    // 4. MODE EDIT PEMILIK TOKO (DENGAN VERIFIKASI PIN LAMA)
     function openOwnerEditMode() {
-      if (redirectTimer) clearTimeout(redirectTimer); // Batalkan auto-redirect!
+      if (redirectTimer) clearTimeout(redirectTimer);
       isEditMode = true;
 
       loadingView.classList.add('hidden');
-      cardBadge.textContent = `ID Kartu: ${currentCardData.id} (Mode Edit)`;
-      document.getElementById('form-title').textContent = 'Ubah Pengaturan Kartu';
-      document.getElementById('form-desc').textContent = 'Masukkan PIN keamanan lama Anda untuk mengganti link tujuan kartu ini.';
-      document.getElementById('pin-label').textContent = 'PIN Keamanan Baru (4 Digit)';
+      cardBadge.textContent = `ID Kartu: ${currentCardData.id} (Mode Ubah Lokasi)`;
+      document.getElementById('form-title').textContent = 'Ubah Lokasi Bisnis';
+      document.getElementById('form-desc').textContent = 'Masukkan PIN lama Anda, lalu cari lokasi toko yang baru.';
       
       oldPinGroup.classList.remove('hidden');
       oldPinInput.required = true;
-      targetUrlInput.value = currentCardData.target_url || '';
       cancelEditBtn.classList.remove('hidden');
       setupView.classList.remove('hidden');
     }
 
     ownerEditBtn.addEventListener('click', openOwnerEditMode);
-
     cancelEditBtn.addEventListener('click', () => {
       if (currentCardData && currentCardData.target_url) {
         window.location.replace(currentCardData.target_url);
       }
     });
 
-    // Simpan Data (Baik Setup Baru maupun Edit Pakai PIN)
+    // 5. SIMPAN KE SUPABASE
     setupForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       
-      const newUrl = targetUrlInput.value.trim();
+      const targetUrlToSave = finalTargetUrl.value.trim();
       const newPin = pinInput.value.trim();
 
-      // Jika sedang dalam Mode Edit, periksa apakah PIN Lama cocok!
+      if (!targetUrlToSave) {
+        alert('Silakan ketik nama toko Anda dan klik tombol "🔍 Cari" terlebih dahulu!');
+        return;
+      }
+
       if (isEditMode) {
         const enteredOldPin = oldPinInput.value.trim();
         if (enteredOldPin !== currentCardData.pin) {
-          alert('❌ PIN Keamanan Lama salah! Anda tidak diizinkan mengubah link kartu ini.');
+          alert('❌ PIN Lama salah! Perubahan lokasi dibatalkan.');
           return;
         }
       }
 
       saveBtn.disabled = true;
-      saveBtn.textContent = 'Menyimpan Data...';
+      saveBtn.textContent = 'Menyimpan & Mengaktifkan...';
 
       try {
         const { error } = await supabaseClient
           .from('nfc_cards')
           .update({ 
-            target_url: newUrl, 
+            target_url: targetUrlToSave, 
             pin: newPin 
           })
           .eq('id', cardId.trim());
 
         if (error) throw error;
 
-        alert('✅ Pengaturan kartu berhasil disimpan! Anda akan diarahkan ke halaman tujuan.');
-        window.location.replace(newUrl);
+        alert('✅ Kartu berhasil diaktifkan! Mengarahkan ke lokasi Google Maps Anda...');
+        window.location.replace(targetUrlToSave);
 
       } catch (err) {
-        alert('Gagal menyimpan pengaturan: ' + err.message);
+        alert('Gagal menyimpan: ' + err.message);
         saveBtn.disabled = false;
-        saveBtn.textContent = 'Simpan & Aktifkan Kartu';
+        saveBtn.textContent = 'Simpan & Aktifkan Kartu Sekarang';
       }
     });
 
