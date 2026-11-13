@@ -3,69 +3,89 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tap to Review - Pengalihan Cepat</title>
-  <!-- Memanggil Library Supabase via CDN -->
+  <title>Tap to Review - Portal Resmi</title>
+  <!-- Library Supabase via CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <style>
-    /* Desain UI Minimalis Bergaya Startup (Mobile-First) */
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
     body { background-color: #f8fafc; color: #0f172a; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-    .card { background: #ffffff; width: 100%; max-width: 400px; padding: 32px 24px; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01); text-align: center; }
+    .card { background: #ffffff; width: 100%; max-width: 420px; padding: 32px 24px; border-radius: 18px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.06); text-align: center; position: relative; }
     
-    /* Animasi Loading Spinner untuk Auto-Redirect */
-    .spinner { width: 42px; height: 42px; border: 4px solid #e2e8f0; border-top-color: #2563eb; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+    .spinner { width: 44px; height: 44px; border: 4px solid #e2e8f0; border-top-color: #2563eb; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
     @keyframes spin { to { transform: rotate(360deg); } }
     
     h1 { font-size: 20px; font-weight: 700; margin-bottom: 8px; color: #1e293b; }
-    p { font-size: 14px; color: #64748b; margin-bottom: 24px; line-height: 1.5; }
+    p { font-size: 14px; color: #64748b; margin-bottom: 20px; line-height: 1.5; }
     
-    /* Styling Form Setup */
     .form-group { text-align: left; margin-bottom: 16px; }
     label { display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 6px; }
     input { width: 100%; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 14px; transition: all 0.2s; outline: none; }
     input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
     
-    button { width: 100%; background-color: #2563eb; color: #ffffff; font-weight: 600; font-size: 15px; padding: 12px; border: none; border-radius: 10px; cursor: pointer; transition: background 0.2s; margin-top: 8px; }
+    .helper-box { background: #f1f5f9; border: 1px dashed #cbd5e1; padding: 12px; border-radius: 10px; margin-bottom: 16px; text-align: left; font-size: 12px; color: #475569; line-height: 1.4; }
+    .helper-box a { color: #2563eb; font-weight: 600; text-decoration: none; }
+    .helper-box input { margin-top: 6px; padding: 8px 10px; font-size: 12px; background: #fff; }
+    
+    button { width: 100%; background-color: #2563eb; color: #ffffff; font-weight: 600; font-size: 15px; padding: 12px; border: none; border-radius: 10px; cursor: pointer; transition: 0.2s; margin-top: 6px; }
     button:hover { background-color: #1d4ed8; }
     button:disabled { background-color: #94a3b8; cursor: not-allowed; }
     
+    .btn-outline { background: transparent; color: #64748b; border: 1px solid #e2e8f0; font-size: 12px; padding: 8px 14px; margin-top: 20px; width: auto; display: inline-block; }
+    .btn-outline:hover { background: #f1f5f9; color: #0f172a; }
+    
     .badge { display: inline-block; background: #eff6ff; color: #2563eb; font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 999px; margin-bottom: 12px; }
-    .hidden { display: none; }
-    .debug-box { background: #fef2f2; color: #dc2626; padding: 12px; border-radius: 10px; font-size: 12px; margin-top: 16px; text-align: left; word-break: break-word; border: 1px solid #fecaca; }
+    .hidden { display: none !important; }
     .quick-links { margin-top: 20px; padding-top: 16px; border-top: 1px dashed #e2e8f0; display: flex; gap: 8px; justify-content: center; }
     .quick-btn { display: inline-block; background: #f1f5f9; color: #334155; text-decoration: none; font-size: 12px; font-weight: 600; padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1; }
-    .quick-btn:hover { background: #e2e8f0; }
   </style>
 </head>
 <body>
 
   <div class="card">
-    <!-- TAMPILAN 1: Loading / Mengarahkan ke Google Maps -->
+    <!-- TAMPILAN 1: Loading & Auto-Redirect (Dilengkapi Tombol Edit Pemilik Toko) -->
     <div id="loading-view">
       <div class="spinner"></div>
       <h1 id="loading-title">Mengarahkan ke Google Maps...</h1>
-      <p id="loading-desc">Mohon tunggu sebentar, sedang membuka halaman ulasan.</p>
+      <p id="loading-desc">Membuka halaman ulasan bintang 5 dalam sekejap.</p>
+      
+      <!-- Muncul saat kartu sudah berisi, memberi kesempatan pemilik toko klik jika ingin ganti link -->
+      <button type="button" id="owner-edit-btn" class="btn-outline hidden">
+        ⚙️ Pemilik Bisnis? Ubah Link / Pengaturan
+      </button>
     </div>
 
-    <!-- TAMPILAN 2: Form Setup (Muncul jika kartu masih kosong) -->
+    <!-- TAMPILAN 2: Form Setup Kartu Baru ATAU Edit Kartu Pakai PIN -->
     <div id="setup-view" class="hidden">
       <span class="badge" id="card-badge">ID Kartu: -</span>
-      <h1>Aktivasi Kartu NFC</h1>
-      <p>Kartu ini belum diatur. Masukkan link Google Maps Review bisnis Anda dan buat PIN keamanan.</p>
+      <h1 id="form-title">Aktivasi Kartu NFC</h1>
+      <p id="form-desc">Kartu ini belum diatur. Masukkan link Google Maps Review bisnis Anda dan buat PIN keamanan.</p>
       
+      <!-- Kotak Bantuan Rangkai Place ID Otomatis -->
+      <div class="helper-box">
+        💡 <b>Tips Mudah:</b> Punya kode <i>Place ID</i> toko Anda? Tempel kodenya di bawah ini agar otomatis menjadi link bintang 5, atau cari di <a href="https://developers.google.com/maps/documentation/places/web-service/place-id" target="_blank">Google Place ID Finder ↗</a>
+        <input type="text" id="place-id-helper" placeholder="Tempel Place ID (Contoh: ChIJo-cPEKX1aS4...)">
+      </div>
+
       <form id="setup-form">
+        <!-- Muncul HANYA jika kartu sudah aktif dan pemilik mau mengubah link -->
+        <div class="form-group hidden" id="old-pin-group">
+          <label for="old-pin" style="color: #dc2626;">🔒 Masukkan PIN Keamanan Lama (4 Digit)</label>
+          <input type="password" id="old-pin" placeholder="Masukkan PIN kartu saat ini" maxlength="4" inputmode="numeric">
+        </div>
+
         <div class="form-group">
-          <label for="target-url">Link Google Maps Review</label>
+          <label for="target-url">Link Tujuan (Google Maps Review / Profil)</label>
           <input type="url" id="target-url" placeholder="https://search.google.com/local/writereview?placeid=..." required>
         </div>
         
         <div class="form-group">
-          <label for="pin">Buat PIN Keamanan (4 Digit Angka)</label>
+          <label for="pin" id="pin-label">Buat PIN Keamanan Baru (4 Digit Angka)</label>
           <input type="password" id="pin" placeholder="Contoh: 1234" pattern="[0-9]{4}" maxlength="4" inputmode="numeric" required>
         </div>
         
         <button type="submit" id="save-btn">Simpan & Aktifkan Kartu</button>
+        <button type="button" id="cancel-edit-btn" class="btn-outline hidden" style="width:100%; margin-top:8px;">Batal & Lanjut ke Maps</button>
       </form>
     </div>
 
@@ -73,19 +93,18 @@
     <div id="error-view" class="hidden">
       <h1>Kartu Tidak Dikenali</h1>
       <p id="error-message">Pastikan Anda melakukan scan atau tap pada kartu NFC yang terdaftar.</p>
-      <div id="debug-info" class="debug-box hidden"></div>
       
-      <!-- Tombol Pintasan untuk mempermudah testing di Samsung DeX -->
       <div class="quick-links">
-        <a href="?id=001" class="quick-btn">🛠️ Tes ID 001 (Setup)</a>
-        <a href="?id=002" class="quick-btn">🚀 Tes ID 002 (Redirect)</a>
+        <a href="?id=001" class="quick-btn">🚀 Tes ID 001</a>
+        <a href="?id=002" class="quick-btn">🚀 Tes ID 002</a>
+        <a href="?id=003" class="quick-btn">🛠️ Tes ID 003</a>
       </div>
     </div>
   </div>
 
   <script>
     // ====================================================================
-    // KONEKSI SUPABASE ANWAR (PUBLISHABLE KEY TERBARU SUDAH TERPASANG)
+    // KONEKSI SUPABASE ANWAR (SUDAH TERINTEGRASI OTOMATIS)
     // ====================================================================
     const SUPABASE_URL = 'https://gsgtjtcapiowbblxtegz.supabase.co'; 
     const SUPABASE_KEY = 'sb_publishable_jcYbTT9-gM5Ya-_u35WpDQ_fXhWQClK';
@@ -96,64 +115,120 @@
     const setupView = document.getElementById('setup-view');
     const errorView = document.getElementById('error-view');
     const errorMessage = document.getElementById('error-message');
-    const debugInfo = document.getElementById('debug-info');
     const cardBadge = document.getElementById('card-badge');
     const setupForm = document.getElementById('setup-form');
     const saveBtn = document.getElementById('save-btn');
+    const ownerEditBtn = document.getElementById('owner-edit-btn');
+    const cancelEditBtn = document.getElementById('cancel-edit-btn');
+    const oldPinGroup = document.getElementById('old-pin-group');
+    const oldPinInput = document.getElementById('old-pin');
+    const placeIdHelper = document.getElementById('place-id-helper');
+    const targetUrlInput = document.getElementById('target-url');
+    const pinInput = document.getElementById('pin');
 
     const urlParams = new URLSearchParams(window.location.search);
     const cardId = urlParams.get('id');
 
+    let currentCardData = null;
+    let redirectTimer = null;
+    let isEditMode = false;
+
+    // Otomatis merangkai Place ID menjadi Link Review Bintang 5 Google Maps
+    placeIdHelper.addEventListener('input', (e) => {
+      const code = e.target.value.trim();
+      if (code.length > 5 && !code.startsWith('http')) {
+        targetUrlInput.value = `https://search.google.com/local/writereview?placeid=${code}`;
+      }
+    });
+
     async function checkCardStatus() {
       if (!cardId) {
-        showError('Parameter ID kartu belum ada di URL. Klik salah satu tombol simulasi di bawah ini untuk mengetes:');
+        showError('Parameter ID kartu belum ada di URL. Pilih salah satu tombol simulasi di bawah ini:');
         return;
       }
 
       try {
         const { data, error } = await supabaseClient
           .from('nfc_cards')
-          .select('id, target_url')
+          .select('id, pin, target_url')
           .eq('id', cardId.trim())
           .maybeSingle();
 
-        if (error) {
-          showError(
-            `Gagal membaca database untuk ID <b>"${cardId}"</b>.`,
-            `Pesan Server Supabase: ${error.message} (Kode: ${error.code || 'N/A'})`
-          );
+        if (error || !data) {
+          showError(`Kartu dengan ID <b>"${cardId}"</b> tidak ditemukan di dalam database.`);
           return;
         }
 
-        if (!data) {
-          showError(
-            `Kartu dengan ID <b>"${cardId}"</b> tidak ditemukan di tabel nfc_cards.`,
-            `Info: Koneksi ke Supabase BERHASIL, namun baris dengan id='${cardId}' tidak terbaca. Pastikan RLS (Row Level Security) sudah dimatikan.`
-          );
-          return;
-        }
+        currentCardData = data;
 
-        // KONDISI 2 (BERISI): Langsung Auto-Redirect ke Google Maps!
+        // KONDISI 2 (BERISI): Tampilkan tombol edit pemilik & redirect otomatis dalam 1.8 detik
         if (data.target_url && data.target_url.trim() !== '') {
-          window.location.replace(data.target_url);
+          ownerEditBtn.classList.remove('hidden');
+          
+          // Jika URL diberi tambahan &edit=1, langsung buka form edit tanpa redirect
+          if (urlParams.get('edit') === '1') {
+            openOwnerEditMode();
+            return;
+          }
+
+          redirectTimer = setTimeout(() => {
+            window.location.replace(data.target_url);
+          }, 1800);
         } 
-        // KONDISI 1 (KOSONG): Tampilkan Form Setup!
+        // KONDISI 1 (KOSONG): Langsung tampilkan Form Aktivasi Baru
         else {
+          isEditMode = false;
           loadingView.classList.add('hidden');
-          cardBadge.textContent = `ID Kartu: ${data.id}`;
+          cardBadge.textContent = `ID Kartu: ${data.id} (Baru)`;
           setupView.classList.remove('hidden');
         }
 
       } catch (err) {
-        showError('Terjadi gangguan koneksi ke database.', `Detail: ${err.message}`);
+        showError('Terjadi gangguan koneksi ke database.');
       }
     }
 
+    // Fungsi saat Pemilik Bisnis klik tombol "⚙️ Pemilik Bisnis? Ubah Link"
+    function openOwnerEditMode() {
+      if (redirectTimer) clearTimeout(redirectTimer); // Batalkan auto-redirect!
+      isEditMode = true;
+
+      loadingView.classList.add('hidden');
+      cardBadge.textContent = `ID Kartu: ${currentCardData.id} (Mode Edit)`;
+      document.getElementById('form-title').textContent = 'Ubah Pengaturan Kartu';
+      document.getElementById('form-desc').textContent = 'Masukkan PIN keamanan lama Anda untuk mengganti link tujuan kartu ini.';
+      document.getElementById('pin-label').textContent = 'PIN Keamanan Baru (4 Digit)';
+      
+      oldPinGroup.classList.remove('hidden');
+      oldPinInput.required = true;
+      targetUrlInput.value = currentCardData.target_url || '';
+      cancelEditBtn.classList.remove('hidden');
+      setupView.classList.remove('hidden');
+    }
+
+    ownerEditBtn.addEventListener('click', openOwnerEditMode);
+
+    cancelEditBtn.addEventListener('click', () => {
+      if (currentCardData && currentCardData.target_url) {
+        window.location.replace(currentCardData.target_url);
+      }
+    });
+
+    // Simpan Data (Baik Setup Baru maupun Edit Pakai PIN)
     setupForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       
-      const targetUrlInput = document.getElementById('target-url').value.trim();
-      const pinInput = document.getElementById('pin').value.trim();
+      const newUrl = targetUrlInput.value.trim();
+      const newPin = pinInput.value.trim();
+
+      // Jika sedang dalam Mode Edit, periksa apakah PIN Lama cocok!
+      if (isEditMode) {
+        const enteredOldPin = oldPinInput.value.trim();
+        if (enteredOldPin !== currentCardData.pin) {
+          alert('❌ PIN Keamanan Lama salah! Anda tidak diizinkan mengubah link kartu ini.');
+          return;
+        }
+      }
 
       saveBtn.disabled = true;
       saveBtn.textContent = 'Menyimpan Data...';
@@ -162,33 +237,27 @@
         const { error } = await supabaseClient
           .from('nfc_cards')
           .update({ 
-            target_url: targetUrlInput, 
-            pin: pinInput 
+            target_url: newUrl, 
+            pin: newPin 
           })
           .eq('id', cardId.trim());
 
         if (error) throw error;
 
-        alert('Kartu berhasil diaktifkan! Anda akan diarahkan ke halaman tujuan.');
-        window.location.replace(targetUrlInput);
+        alert('✅ Pengaturan kartu berhasil disimpan! Anda akan diarahkan ke halaman tujuan.');
+        window.location.replace(newUrl);
 
       } catch (err) {
-        alert('Gagal menyimpan pengaturan kartu: ' + err.message);
+        alert('Gagal menyimpan pengaturan: ' + err.message);
         saveBtn.disabled = false;
         saveBtn.textContent = 'Simpan & Aktifkan Kartu';
       }
     });
 
-    function showError(msg, debugMsg = '') {
+    function showError(msg) {
       loadingView.classList.add('hidden');
       setupView.classList.add('hidden');
       errorMessage.innerHTML = msg;
-      if (debugMsg) {
-        debugInfo.innerHTML = debugMsg;
-        debugInfo.classList.remove('hidden');
-      } else {
-        debugInfo.classList.add('hidden');
-      }
       errorView.classList.remove('hidden');
     }
 
