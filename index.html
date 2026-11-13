@@ -32,6 +32,10 @@
     
     .badge { display: inline-block; background: #eff6ff; color: #2563eb; font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 999px; margin-bottom: 12px; }
     .hidden { display: none; }
+    .debug-box { background: #fef2f2; color: #dc2626; padding: 12px; border-radius: 10px; font-size: 12px; margin-top: 16px; text-align: left; word-break: break-word; border: 1px solid #fecaca; }
+    .quick-links { margin-top: 20px; padding-top: 16px; border-top: 1px dashed #e2e8f0; display: flex; gap: 8px; justify-content: center; }
+    .quick-btn { display: inline-block; background: #f1f5f9; color: #334155; text-decoration: none; font-size: 12px; font-weight: 600; padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1; }
+    .quick-btn:hover { background: #e2e8f0; }
   </style>
 </head>
 <body>
@@ -65,62 +69,75 @@
       </form>
     </div>
 
-    <!-- TAMPILAN 3: Pesan Error (Jika ID tidak ditemukan/kosong) -->
+    <!-- TAMPILAN 3: Pesan Error & Pintasan Testing -->
     <div id="error-view" class="hidden">
       <h1>Kartu Tidak Dikenali</h1>
       <p id="error-message">Pastikan Anda melakukan scan atau tap pada kartu NFC yang terdaftar.</p>
+      <div id="debug-info" class="debug-box hidden"></div>
+      
+      <!-- Tombol Pintasan untuk mempermudah testing di Samsung DeX -->
+      <div class="quick-links">
+        <a href="?id=001" class="quick-btn">🛠️ Tes ID 001 (Setup)</a>
+        <a href="?id=002" class="quick-btn">🚀 Tes ID 002 (Redirect)</a>
+      </div>
     </div>
   </div>
 
   <script>
     // ====================================================================
-    // KONEKSI SUPABASE ANWAR (SUDAH TERINTEGRASI OTOMATIS)
+    // KONEKSI SUPABASE ANWAR (PUBLISHABLE KEY TERBARU SUDAH TERPASANG)
     // ====================================================================
     const SUPABASE_URL = 'https://gsgtjtcapiowbblxtegz.supabase.co'; 
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdzZ3RqdGNhcGlvd2JibHh0ZWd6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ1MDk2OTQsImV4cCI6MjExMDA4NTY5NH0.F-QhgvUILdKsw6axWehioj0-1HnexST87zRkjgBAMxo';
+    const SUPABASE_KEY = 'sb_publishable_jcYbTT9-gM5Ya-_u35WpDQ_fXhWQClK';
     
-    // Inisialisasi koneksi ke Supabase
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Mengambil elemen-elemen HTML
     const loadingView = document.getElementById('loading-view');
     const setupView = document.getElementById('setup-view');
     const errorView = document.getElementById('error-view');
     const errorMessage = document.getElementById('error-message');
+    const debugInfo = document.getElementById('debug-info');
     const cardBadge = document.getElementById('card-badge');
     const setupForm = document.getElementById('setup-form');
     const saveBtn = document.getElementById('save-btn');
 
-    // 1. Ambil parameter ?id= dari alamat URL browser
     const urlParams = new URLSearchParams(window.location.search);
     const cardId = urlParams.get('id');
 
-    // Fungsi Utama yang berjalan otomatis saat halaman dibuka
     async function checkCardStatus() {
-      // Jika URL dibuka tanpa ?id=...
       if (!cardId) {
-        showError('Parameter ID kartu tidak ditemukan di URL. Tambahkan <b>?id=001</b> atau <b>?id=002</b> di ujung alamat browser Anda.');
+        showError('Parameter ID kartu belum ada di URL. Klik salah satu tombol simulasi di bawah ini untuk mengetes:');
         return;
       }
 
       try {
-        // 2. Tarik data dari tabel nfc_cards berdasarkan id
         const { data, error } = await supabaseClient
           .from('nfc_cards')
           .select('id, target_url')
-          .eq('id', cardId)
-          .single();
+          .eq('id', cardId.trim())
+          .maybeSingle();
 
-        if (error || !data) {
-          showError(`Kartu dengan ID <b>"${cardId}"</b> belum terdaftar di dalam sistem database.`);
+        if (error) {
+          showError(
+            `Gagal membaca database untuk ID <b>"${cardId}"</b>.`,
+            `Pesan Server Supabase: ${error.message} (Kode: ${error.code || 'N/A'})`
+          );
           return;
         }
 
-        // 3. KONDISI 2 (BERISI): Jika target_url sudah ada isinya -> Langsung Auto-Redirect!
+        if (!data) {
+          showError(
+            `Kartu dengan ID <b>"${cardId}"</b> tidak ditemukan di tabel nfc_cards.`,
+            `Info: Koneksi ke Supabase BERHASIL, namun baris dengan id='${cardId}' tidak terbaca. Pastikan RLS (Row Level Security) sudah dimatikan.`
+          );
+          return;
+        }
+
+        // KONDISI 2 (BERISI): Langsung Auto-Redirect ke Google Maps!
         if (data.target_url && data.target_url.trim() !== '') {
           window.location.replace(data.target_url);
         } 
-        // 4. KONDISI 1 (KOSONG): Jika target_url masih NULL/kosong -> Tampilkan Form Setup!
+        // KONDISI 1 (KOSONG): Tampilkan Form Setup!
         else {
           loadingView.classList.add('hidden');
           cardBadge.textContent = `ID Kartu: ${data.id}`;
@@ -128,12 +145,10 @@
         }
 
       } catch (err) {
-        showError('Terjadi gangguan koneksi ke database.');
-        console.error(err);
+        showError('Terjadi gangguan koneksi ke database.', `Detail: ${err.message}`);
       }
     }
 
-    // Fungsi saat tombol "Simpan & Aktifkan Kartu" diklik
     setupForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       
@@ -144,38 +159,39 @@
       saveBtn.textContent = 'Menyimpan Data...';
 
       try {
-        // Update data link Maps dan PIN ke Supabase untuk ID tersebut
         const { error } = await supabaseClient
           .from('nfc_cards')
           .update({ 
             target_url: targetUrlInput, 
             pin: pinInput 
           })
-          .eq('id', cardId);
+          .eq('id', cardId.trim());
 
         if (error) throw error;
 
-        // Jika berhasil disimpan, langsung arahkan ke Google Maps tujuan!
         alert('Kartu berhasil diaktifkan! Anda akan diarahkan ke halaman tujuan.');
         window.location.replace(targetUrlInput);
 
       } catch (err) {
-        alert('Gagal menyimpan pengaturan kartu. Silakan coba lagi.');
-        console.error(err);
+        alert('Gagal menyimpan pengaturan kartu: ' + err.message);
         saveBtn.disabled = false;
         saveBtn.textContent = 'Simpan & Aktifkan Kartu';
       }
     });
 
-    // Fungsi pembantu untuk menampilkan pesan error
-    function showError(msg) {
+    function showError(msg, debugMsg = '') {
       loadingView.classList.add('hidden');
       setupView.classList.add('hidden');
       errorMessage.innerHTML = msg;
+      if (debugMsg) {
+        debugInfo.innerHTML = debugMsg;
+        debugInfo.classList.remove('hidden');
+      } else {
+        debugInfo.classList.add('hidden');
+      }
       errorView.classList.remove('hidden');
     }
 
-    // Jalankan pengecekan saat web dibuka
     checkCardStatus();
   </script>
 </body>
