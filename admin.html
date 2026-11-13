@@ -3,19 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Studio - Produksi NFC & Stiker QR</title>
+  <title>Admin Studio - Produksi NFC & QR</title>
   
-  <!-- 1. Library Supabase via CDN -->
+  <!-- Library via CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- 2. Library QRCode.js via CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <!-- 3. Library jsPDF via CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background-color: #f1f5f9; color: #0f172a; padding: 20px; }
-    .container { max-width: 1080px; margin: 0 auto; }
+    .container { max-width: 1120px; margin: 0 auto; }
     
     .login-box { background: #fff; max-width: 380px; margin: 80px auto; padding: 32px 24px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; }
     .login-box h2 { margin-bottom: 8px; font-size: 20px; }
@@ -23,11 +21,11 @@
     input, select { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 13.5px; outline: none; background: #fff; }
     input:focus, select:focus { border-color: #2563eb; }
 
-    .header { background: #fff; padding: 20px 24px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 20px; }
+    .header { background: #fff; padding: 20px 24px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 18px; }
     .header h1 { font-size: 20px; color: #1e293b; }
     .header p { font-size: 13px; color: #64748b; margin-top: 4px; }
     
-    .btn { background: #2563eb; color: #fff; border: none; padding: 11px 16px; border-radius: 10px; font-weight: 600; font-size: 13.5px; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+    .btn { background: #2563eb; color: #fff; border: none; padding: 10px 15px; border-radius: 10px; font-weight: 600; font-size: 13px; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
     .btn:hover { background: #1d4ed8; }
     .btn:disabled { background: #94a3b8; cursor: not-allowed; }
     .btn-dark { background: #0f172a; }
@@ -36,16 +34,17 @@
     .btn-green:hover { background: #15803d; }
     .btn-secondary { background: #e2e8f0; color: #334155; }
     .btn-secondary:hover { background: #cbd5e1; }
-    .btn-sm { padding: 6px 10px; font-size: 12px; border-radius: 8px; }
+    .btn-sm { padding: 6px 10px; font-size: 11.5px; border-radius: 7px; }
 
-    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 20px; }
-    .stat-card { background: #fff; padding: 16px 20px; border-radius: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
-    .stat-card span { font-size: 11.5px; color: #64748b; font-weight: 700; text-transform: uppercase; }
+    /* Statistik 4 Kolom */
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 18px; }
+    .stat-card { background: #fff; padding: 16px 18px; border-radius: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+    .stat-card span { font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; }
     .stat-card h3 { font-size: 26px; margin-top: 4px; color: #0f172a; }
 
-    /* Panel Studio Desain & NFC Writer */
-    .studio-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 16px; margin-bottom: 20px; }
-    @media (max-width: 820px) { .studio-grid { grid-template-columns: 1fr; } }
+    /* Panel Studio Desain Built-in */
+    .studio-grid { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 16px; margin-bottom: 18px; }
+    @media (max-width: 850px) { .studio-grid { grid-template-columns: 1fr; } }
     .panel-box { background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
     .panel-box h3 { font-size: 16px; margin-bottom: 6px; color: #1e293b; }
     .panel-box p { font-size: 12.5px; color: #64748b; margin-bottom: 14px; line-height: 1.4; }
@@ -53,21 +52,27 @@
     .control-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
     .control-group label { display: block; font-size: 11.5px; font-weight: 600; color: #475569; margin-bottom: 4px; }
     
-    .preview-stage { background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 220px; }
-    #template-preview-canvas { max-width: 100%; max-height: 220px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); background: #fff; }
+    .preview-stage { background: #cbd5e1; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    #template-preview-canvas { max-width: 100%; height: auto; max-height: 280px; border-radius: 10px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
 
-    /* Kotak Web NFC Auto-Writer */
-    .nfc-writer-status { background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 12px; padding: 14px; margin-top: 12px; text-align: center; }
-    .nfc-writer-status h4 { font-size: 18px; color: #1d4ed8; margin-bottom: 4px; }
+    /* Bar Filter & Pencarian Tabel */
+    .filter-bar { background: #fff; padding: 14px 18px; border-radius: 16px 16px 0 0; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .filter-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+    .tab-btn { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 7px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; }
+    .tab-btn.active { background: #0f172a; color: #fff; border-color: #0f172a; }
+    .search-box { width: 280px; max-width: 100%; }
 
-    .table-box { background: #fff; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13.5px; }
-    th { background: #f8fafc; padding: 12px 16px; font-weight: 600; color: #475569; border-bottom: 1px solid #e2e8f0; }
-    td { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-    .badge-active { background: #dcfce7; color: #15803d; padding: 4px 10px; border-radius: 99px; font-size: 11.5px; font-weight: 600; }
-    .badge-empty { background: #fef9c3; color: #a16207; padding: 4px 10px; border-radius: 99px; font-size: 11.5px; font-weight: 600; }
-    .url-cell { max-width: 240px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #2563eb; }
+    .table-box { background: #fff; border-radius: 0 0 16px 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+    th { background: #f8fafc; padding: 12px 14px; font-weight: 600; color: #475569; border-bottom: 1px solid #e2e8f0; }
+    td { padding: 12px 14px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
     
+    .badge-active { background: #dcfce7; color: #15803d; padding: 4px 9px; border-radius: 99px; font-size: 11px; font-weight: 600; display: inline-block; }
+    .badge-empty { background: #fef9c3; color: #a16207; padding: 4px 9px; border-radius: 99px; font-size: 11px; font-weight: 600; display: inline-block; }
+    .badge-printed { background: #dbeafe; color: #1d4ed8; padding: 4px 9px; border-radius: 99px; font-size: 11px; font-weight: 600; display: inline-block; cursor: pointer; }
+    .badge-unprinted { background: #f1f5f9; color: #64748b; padding: 4px 9px; border-radius: 99px; font-size: 11px; font-weight: 600; display: inline-block; cursor: pointer; border: 1px dashed #cbd5e1; }
+    
+    .url-cell { max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .hidden { display: none !important; }
     #qr-hidden-container { position: absolute; left: -9999px; top: -9999px; }
   </style>
@@ -84,110 +89,120 @@
     </form>
   </div>
 
-  <!-- LAYAR 2: DASHBOARD & STUDIO CETAK -->
+  <!-- LAYAR 2: DASHBOARD & STUDIO CETAK BUILT-IN -->
   <div id="dashboard-view" class="container hidden">
     <div class="header">
       <div>
-        <h1>🚀 Dapur Produksi NFC & Studio Cetak QR</h1>
+        <h1>🚀 Dapur Produksi NFC & Desain Stiker Otomatis</h1>
         <p id="domain-info">Portal Klien: -</p>
       </div>
       <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-        <button id="refresh-btn" class="btn btn-secondary">🔄 Refresh</button>
-        <button id="generate-btn" class="btn">⚡ Generate 10 ID Baru + Download PDF</button>
+        <button id="refresh-btn" class="btn btn-secondary">🔄 Refresh Data</button>
+        <button id="generate-btn" class="btn">⚡ Buat Batch Kartu Baru + Download PDF</button>
       </div>
     </div>
 
-    <!-- Statistik -->
+    <!-- Statistik Lengkap (Termasuk Status Sudah Dicetak / Belum) -->
     <div class="stats">
       <div class="stat-card">
-        <span>Total Kartu Diproduksi</span>
+        <span>Total ID Kartu</span>
         <h3 id="stat-total">0</h3>
       </div>
       <div class="stat-card">
-        <span>Sudah Aktif (Terisi Maps)</span>
+        <span>Aktif (Terisi Toko)</span>
         <h3 id="stat-active" style="color: #16a34a;">0</h3>
       </div>
       <div class="stat-card">
-        <span>Stok Kosong (Siap Jual)</span>
+        <span>Masih Kosong (Stok)</span>
         <h3 id="stat-empty" style="color: #ca8a04;">0</h3>
+      </div>
+      <div class="stat-card">
+        <span>Sudah Dicetak (Print)</span>
+        <h3 id="stat-printed" style="color: #2563eb;">0</h3>
+      </div>
+      <div class="stat-card">
+        <span>Belum Dicetak</span>
+        <h3 id="stat-unprinted" style="color: #dc2626;">0</h3>
       </div>
     </div>
 
-    <!-- STUDIO DESAIN CUSTOM (OPSI A) & NFC AUTO-WRITER -->
+    <!-- STUDIO DESAIN BUILT-IN (LANGSUNG DARI KODINGAN TANPA UPLOAD) -->
     <div class="studio-grid">
-      <!-- Kiri: Studio Tempel QR ke Desain Stiker Custom (Pengganti Canva) -->
       <div class="panel-box">
-        <h3>🎨 Studio Desain Stiker Custom (Pengganti Canva)</h3>
-        <p>Upload gambar template stiker/kartu kosonganmu (PNG/JPG). Sistem otomatis menempelkan QR Code dan nomor ID di atas desainmu saat экspor PDF A4!</p>
+        <h3>🎨 Pilih Desain Kartu Bawaan & Ukuran Cetak PDF</h3>
+        <p>Desain digambar langsung secara vektor oleh sistem (100% tajam saat dicetak, tanpa perlu atur posisi manual).</p>
         
         <div class="control-grid">
-          <div class="control-group" style="grid-column: span 2;">
-            <label>1. Upload Gambar Desain Master (Opsional - Biarkan kosong jika ingin mode kotak standar)</label>
-            <input type="file" id="bg-upload" accept="image/png, image/jpeg">
-          </div>
           <div class="control-group">
-            <label>Ukuran Cetak di PDF A4</label>
-            <select id="print-layout-mode">
-              <option value="10-small">10 Kartu / Lembar A4 (8 x 5 cm)</option>
-              <option value="4-a6">4 Standee A6 / Lembar A4 (9.5 x 13.5 cm)</option>
+            <label>1. Pilih Tema Desain Kartu:</label>
+            <select id="design-theme-select">
+              <option value="theme-1">Desain 1: Modern White Glow ("Yuk, Berikan Ulasan Anda!")</option>
+              <option value="theme-2">Desain 2: Classic Google Frame ("Bantu kami dengan ulasan ★5")</option>
             </select>
           </div>
           <div class="control-group">
-            <label>Ukuran QR Code (% Lebar Desain): <span id="val-qr-size">42</span>%</label>
-            <input type="range" id="qr-size-slider" min="20" max="75" value="42">
-          </div>
-          <div class="control-group">
-            <label>Posisi Horizontal QR (X): <span id="val-qr-x">50</span>%</label>
-            <input type="range" id="qr-x-slider" min="10" max="90" value="50">
-          </div>
-          <div class="control-group">
-            <label>Posisi Vertikal QR (Y): <span id="val-qr-y">52</span>%</label>
-            <input type="range" id="qr-y-slider" min="10" max="90" value="52">
+            <label>2. Pilih Ukuran di Kertas A4 (HVS):</label>
+            <select id="paper-size-select">
+              <option value="square-6">Kotak Meja Kasir 9.2 x 9.2 cm (1 A4 isi 6 Pcs - Rekomendasi Flat)</option>
+              <option value="a6-4">Ukuran Sedang A6 / Seperempat HVS (1 A4 isi 4 Pcs - 9.5 x 13.5 cm)</option>
+              <option value="a5-2">Ukuran Besar A5 / Setengah HVS (1 A4 isi 2 Pcs - 14 x 19.5 cm)</option>
+            </select>
           </div>
         </div>
 
         <div class="preview-stage">
-          <canvas id="template-preview-canvas" width="400" height="250"></canvas>
-          <span style="font-size: 11px; color: #64748b; margin-top: 6px;">👆 Live Preview Desain + Posisi QR Code</span>
+          <canvas id="template-preview-canvas" width="600" height="600"></canvas>
+          <span style="font-size: 11.5px; color: #1e293b; font-weight: 600; margin-top: 8px;">👆 Pratinjau Desain Otomatis (Resolusi Tinggi Siap Cetak)</span>
         </div>
       </div>
 
-      <!-- Kanan: Cetak Ulang Batch & Web NFC Auto-Writer -->
+      <!-- Kanan: Cetak Ulang Berdasarkan Status & Web NFC Writer -->
       <div style="display: flex; flex-direction: column; gap: 16px;">
-        <!-- Cetak Ulang PDF dari ID yang sudah ada -->
         <div class="panel-box">
-          <h3>🖨️ Cetak PDF dari ID yang Sudah Ada</h3>
-          <p>Pilih rentang ID kartu untuk di-export ke PDF A4 menggunakan desain di samping tanpa membuat ID baru.</p>
-          <div class="control-grid">
+          <h3>🖨️ Cetak PDF Kartu (Otomatis Tandai "Sudah Print")</h3>
+          <p>Cetak kartu yang belum pernah di-print atau pilih rentang nomor ID tertentu. Setelah PDF terunduh, status kartu otomatis berubah menjadi <b>"Sudah Print"</b>.</p>
+          
+          <button id="print-unprinted-btn" class="btn btn-green" style="width: 100%; justify-content: center; margin-bottom: 14px;">
+            🖨️ Cetak Semua Kartu yang "Belum Print" Sekarang
+          </button>
+
+          <div class="control-grid" style="border-top: 1px dashed #e2e8f0; padding-top: 12px;">
             <div class="control-group">
-              <label>Mulai dari ID</label>
-              <input type="text" id="print-start-id" value="001" placeholder="001">
+              <label>Cetak Rentang Dari ID:</label>
+              <input type="text" id="print-start-id" value="001">
             </div>
             <div class="control-group">
-              <label>Sampai ID</label>
-              <input type="text" id="print-end-id" value="010" placeholder="010">
+              <label>Sampai ID:</label>
+              <input type="text" id="print-end-id" value="006">
             </div>
           </div>
-          <button id="reprint-batch-btn" class="btn btn-dark" style="width: 100%; justify-content: center;">📄 Download PDF Rentang Ini</button>
+          <button id="reprint-batch-btn" class="btn btn-dark" style="width: 100%; justify-content: center;">📄 Download PDF Rentang ID Ini</button>
         </div>
 
-        <!-- Fitur Web NFC Auto-Next Writer -->
+        <!-- Fitur Web NFC Auto-Writer -->
         <div class="panel-box">
           <h3>📲 Web NFC Auto-Writer (Tulis Cip Berurutan)</h3>
-          <p>Buka halaman ini di Chrome HP Android (mode non-DeX saat menulis NFC). Tempel cip NTAG215 satu per satu, nomor ID akan naik otomatis!</p>
-          <div class="control-grid">
-            <div class="control-group" style="grid-column: span 2;">
-              <label>Mulai Tulis dari Nomor ID:</label>
-              <input type="number" id="nfc-start-num" value="3" min="1">
-            </div>
+          <p>Khusus saat dibuka di Chrome HP Android (mode HP biasa). Tempel cip NTAG215 satu per satu, nomor ID naik otomatis!</p>
+          <div style="display: flex; gap: 8px;">
+            <input type="number" id="nfc-start-num" value="1" min="1" style="width: 90px;" title="Mulai dari ID">
+            <button id="start-nfc-writer-btn" class="btn btn-secondary" style="flex: 1; justify-content: center;">📡 Mulai Mode Tulis NFC</button>
           </div>
-          <button id="start-nfc-writer-btn" class="btn btn-green" style="width: 100%; justify-content: center;">📡 Mulai Mode Tulis NFC Berurutan</button>
-          
-          <div id="nfc-status-box" class="nfc-writer-status hidden">
-            <h4 id="nfc-target-label">Siap Menulis ID: 003</h4>
-            <p id="nfc-sub-msg" style="margin:0; font-size:12px;">Tempelkan cip NTAG215 ke belakang HP Anda sekarang...</p>
-          </div>
+          <div id="nfc-status-box" class="hidden" style="margin-top:10px; padding:10px; background:#eff6ff; border-radius:8px; font-size:12px; color:#1d4ed8; font-weight:600; text-align:center;"></div>
         </div>
+      </div>
+    </div>
+
+    <!-- FILTER TAB & PENCARIAN KLIEN (AFTER-SALES) -->
+    <div class="filter-bar">
+      <div class="filter-tabs">
+        <button class="tab-btn active" onclick="setFilter('all', this)">Semua Kartu</button>
+        <button class="tab-btn" onclick="setFilter('empty', this)">🟡 Masih Kosong (Stok)</button>
+        <button class="tab-btn" onclick="setFilter('active', this)">🟢 Sudah Terisi Link</button>
+        <button class="tab-btn" onclick="setFilter('unprinted', this)">🔴 Belum Di-Print</button>
+        <button class="tab-btn" onclick="setFilter('printed', this)">🔵 Sudah Di-Print</button>
+      </div>
+      <div class="search-box">
+        <input type="text" id="table-search-input" placeholder="🔍 Cari ID Kartu, Nama Toko, atau PIN...">
       </div>
     </div>
 
@@ -197,14 +212,15 @@
         <thead>
           <tr>
             <th>ID Kartu</th>
-            <th>Status</th>
+            <th>Status Link</th>
+            <th>Status Print (Klik u/ Ubah)</th>
             <th>PIN</th>
-            <th>Link Google Maps (Target URL)</th>
-            <th>Aksi Cepat (Terima Beres)</th>
+            <th>Nama Toko / Link Tujuan</th>
+            <th>Aksi & After-Sales</th>
           </tr>
         </thead>
         <tbody id="cards-tbody">
-          <tr><td colspan="5" style="text-align: center; padding: 30px;">Memuat data dari Supabase...</td></tr>
+          <tr><td colspan="6" style="text-align: center; padding: 30px;">Memuat data dari Supabase...</td></tr>
         </tbody>
       </table>
     </div>
@@ -214,7 +230,7 @@
 
   <script>
     // ====================================================================
-    // KONEKSI SUPABASE & GOOGLE PLACES API ANWAR (SUDAH TERINTEGRASI)
+    // KONEKSI SUPABASE & GOOGLE PLACES API ANWAR
     // ====================================================================
     const SUPABASE_URL = 'https://gsgtjtcapiowbblxtegz.supabase.co'; 
     const SUPABASE_KEY = 'sb_publishable_jcYbTT9-gM5Ya-_u35WpDQ_fXhWQClK';
@@ -233,18 +249,14 @@
     const refreshBtn = document.getElementById('refresh-btn');
     const qrContainer = document.getElementById('qr-hidden-container');
 
-    // Elemen Studio Desain
-    const bgUpload = document.getElementById('bg-upload');
-    const layoutModeSelect = document.getElementById('print-layout-mode');
-    const qrSizeSlider = document.getElementById('qr-size-slider');
-    const qrXSlider = document.getElementById('qr-x-slider');
-    const qrYSlider = document.getElementById('qr-y-slider');
+    const designThemeSelect = document.getElementById('design-theme-select');
+    const paperSizeSelect = document.getElementById('paper-size-select');
     const previewCanvas = document.getElementById('template-preview-canvas');
-    const previewCtx = previewCanvas.getContext('2d');
+    const tableSearchInput = document.getElementById('table-search-input');
 
     let allCardsData = [];
-    let uploadedBgImage = null;
-    let sampleQrImage = null;
+    let currentFilter = 'all';
+    let sampleQrImg = null;
 
     // 1. Login Admin
     loginForm.addEventListener('submit', async (e) => {
@@ -252,9 +264,10 @@
       if (document.getElementById('admin-pass').value === ADMIN_PASSWORD) {
         loginView.classList.add('hidden');
         dashboardView.classList.remove('hidden');
+        const qrUrl = await generateQRDataURL(`${BASE_CLIENT_URL}?id=001`);
+        sampleQrImg = await loadImageElement(qrUrl);
+        updateStudioPreview();
         loadCards();
-        await initPreviewQR();
-        drawStudioPreview();
       } else {
         alert('Password salah! Gunakan: admin123');
       }
@@ -272,49 +285,523 @@
         return;
       }
       allCardsData = data || [];
-      renderTable(allCardsData);
+      updateStatsAndTable();
     }
 
-    function renderTable(cards) {
-      document.getElementById('stat-total').textContent = cards.length;
-      const activeCount = cards.filter(c => c.target_url && c.target_url.trim() !== '').length;
-      document.getElementById('stat-active').textContent = activeCount;
-      document.getElementById('stat-empty').textContent = cards.length - activeCount;
+    // 3. Filter & Pencarian Tabel (Memudahkan After-Sales & Cek Print)
+    window.setFilter = function(filterType, btnEl) {
+      currentFilter = filterType;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      if (btnEl) btnEl.classList.add('active');
+      updateStatsAndTable();
+    };
 
-      if (cards.length === 0) {
-        cardsTbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 30px;">Belum ada data kartu.</td></tr>';
+    tableSearchInput.addEventListener('input', updateStatsAndTable);
+
+    function updateStatsAndTable() {
+      const total = allCardsData.length;
+      const activeCount = allCardsData.filter(c => c.target_url && c.target_url.trim() !== '').length;
+      const printedCount = allCardsData.filter(c => c.is_printed === true).length;
+
+      document.getElementById('stat-total').textContent = total;
+      document.getElementById('stat-active').textContent = activeCount;
+      document.getElementById('stat-empty').textContent = total - activeCount;
+      document.getElementById('stat-printed').textContent = printedCount;
+      document.getElementById('stat-unprinted').textContent = total - printedCount;
+
+      const searchVal = tableSearchInput.value.trim().toLowerCase();
+
+      const filtered = allCardsData.filter(card => {
+        const isConfigured = card.target_url && card.target_url.trim() !== '';
+        const isPrinted = card.is_printed === true;
+
+        if (currentFilter === 'empty' && isConfigured) return false;
+        if (currentFilter === 'active' && !isConfigured) return false;
+        if (currentFilter === 'printed' && !isPrinted) return false;
+        if (currentFilter === 'unprinted' && isPrinted) return false;
+
+        if (searchVal) {
+          const matchId = (card.id || '').toLowerCase().includes(searchVal);
+          const matchStore = (card.store_name || '').toLowerCase().includes(searchVal);
+          const matchUrl = (card.target_url || '').toLowerCase().includes(searchVal);
+          const matchPin = (card.pin || '').toLowerCase().includes(searchVal);
+          return matchId || matchStore || matchUrl || matchPin;
+        }
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        cardsTbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px; color:#64748b;">Tidak ada kartu yang cocok dengan filter/pencarian ini.</td></tr>';
         return;
       }
 
-      cardsTbody.innerHTML = cards.map(card => {
+      cardsTbody.innerHTML = filtered.map(card => {
         const isConfigured = card.target_url && card.target_url.trim() !== '';
+        const isPrinted = card.is_printed === true;
+
         const statusBadge = isConfigured 
-          ? '<span class="badge-active">Aktif</span>' 
-          : '<span class="badge-empty">Kosong</span>';
-        const fullTapUrl = `${BASE_CLIENT_URL}?id=${card.id}`;
+          ? '<span class="badge-active">🟢 Terisi</span>' 
+          : '<span class="badge-empty">🟡 Kosong</span>';
+
+        const printBadge = isPrinted
+          ? `<span class="badge-printed" onclick="togglePrintStatus('${card.id}', false)" title="Klik untuk ubah jadi Belum Print">🖨️ Sudah Print</span>`
+          : `<span class="badge-unprinted" onclick="togglePrintStatus('${card.id}', true)" title="Klik untuk tandai Sudah Print">⏳ Belum Print</span>`;
+
+        const storeDisplay = card.store_name 
+          ? `<b>${card.store_name}</b><br><a href="${card.target_url}" target="_blank" style="font-size:11px; color:#2563eb;">Buka Link 5★ ↗</a>`
+          : (isConfigured ? `<a href="${card.target_url}" target="_blank" style="color:#2563eb;">${card.target_url}</a>` : '<span style="color:#94a3b8;">Belum disetting</span>');
 
         return `
           <tr>
-            <td><b>${card.id}</b></td>
+            <td><b style="font-size:14px;">${card.id}</b></td>
             <td>${statusBadge}</td>
-            <td>${card.pin || '-'}</td>
-            <td class="url-cell">
-              ${isConfigured ? `<a href="${card.target_url}" target="_blank">${card.target_url}</a>` : '<span style="color:#94a3b8;">Belum disetting</span>'}
-            </td>
+            <td>${printBadge}</td>
+            <td><code>${card.pin || '-'}</code></td>
+            <td class="url-cell">${storeDisplay}</td>
             <td style="display: flex; gap: 6px; flex-wrap: wrap;">
-              <button class="btn btn-secondary btn-sm" onclick="quickSearchStoreForCard('${card.id}', '${card.pin || '1234'}')">🔍 Set Toko (5★)</button>
-              <button class="btn btn-secondary btn-sm" onclick="resetCard('${card.id}')">🗑️ Kosongkan</button>
-              <button class="btn btn-secondary btn-sm" onclick="printSingleQR('${card.id}')">🖨️ PDF</button>
-              <a href="${fullTapUrl}" target="_blank" class="btn btn-secondary btn-sm" style="text-decoration:none;">🔗 Buka</a>
+              <button class="btn btn-secondary btn-sm" onclick="quickSearchStoreForCard('${card.id}', '${card.pin || '1234'}')">🔍 Set Toko</button>
+              <button class="btn btn-secondary btn-sm" onclick="printSingleQR('${card.id}')">🖨️ Cetak PDF</button>
+              <button class="btn btn-secondary btn-sm" onclick="resetCard('${card.id}')">🗑️ Reset</button>
+              <a href="${BASE_CLIENT_URL}?id=${card.id}" target="_blank" class="btn btn-secondary btn-sm">🔗 Tes</a>
             </td>
           </tr>
         `;
       }).join('');
     }
 
-    // 3. Fitur Layanan "Terima Beres": Ketik Nama Toko Langsung dari Admin -> Otomatis Jadi Link Bintang 5!
+    // Ubah Status Print Manual dengan 1 Klik
+    window.togglePrintStatus = async function(id, newStatus) {
+      await supabaseClient.from('nfc_cards').update({ is_printed: newStatus }).eq('id', id);
+      loadCards();
+    };
+
+    // Tandai Sekelompok ID sebagai "Sudah Dicetak" secara otomatis setelah Export PDF
+    async function markBatchAsPrinted(cardIds) {
+      await supabaseClient.from('nfc_cards').update({ is_printed: true }).in('id', cardIds);
+      loadCards();
+    }
+
+    // 4. MESIN PENGGAMBAR DESAIN KARTU OTOMATIS (PERSIS 2 GAMBAR REFERENSI ANWAR!)
+    designThemeSelect.addEventListener('change', updateStudioPreview);
+    paperSizeSelect.addEventListener('change', updateStudioPreview);
+
+    function updateStudioPreview() {
+      const sizeMode = paperSizeSelect.value;
+      const isSquare = sizeMode === 'square-6';
+      previewCanvas.width = 800;
+      previewCanvas.height = isSquare ? 800 : 1120;
+      if (sampleQrImg) {
+        renderCardDesignToCanvas(previewCanvas, designThemeSelect.value, '001', sampleQrImg);
+      }
+    }
+
+    // Fungsi Inti yang Menggambar Desain 1 & Desain 2 dengan Kualitas Vektor Tinggi
+    function renderCardDesignToCanvas(canvas, theme, cardId, qrImageElement) {
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width;
+      const H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+
+      if (theme === 'theme-1') {
+        // ====================================================================
+        // DESAIN 1: MODERN WHITE GLOW ("Yuk, Berikan Ulasan Anda!")
+        // ====================================================================
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, W, H);
+
+        // Dekorasi Sudut Warna-warni Google (Glow Halus di 4 Pojok)
+        drawCornerBlobs(ctx, W, H);
+
+        // Logo "G" Google Resmi di Atas
+        drawGoogleGLogo(ctx, W / 2, H * 0.13, W * 0.075);
+
+        // Judul Utama: "Yuk, Berikan Ulasan Anda!"
+        ctx.fillStyle = '#202124';
+        ctx.font = `800 ${Math.round(W * 0.072)}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.fillText('Yuk, Berikan', W / 2, H * 0.27);
+        ctx.fillText('Ulasan Anda!', W / 2, H * 0.355);
+
+        // Kotak Putih Tengah Berbayang Halus
+        const boxX = W * 0.08;
+        const boxY = H * 0.41;
+        const boxW = W * 0.84;
+        const boxH = H * 0.42;
+        ctx.save();
+        ctx.shadowColor = 'rgba(0,0,0,0.08)';
+        ctx.shadowBlur = 25;
+        ctx.fillStyle = '#f8fafc';
+        roundRect(ctx, boxX, boxY, boxW, boxH, 28, true, false);
+        ctx.restore();
+        ctx.strokeStyle = '#e2e8f0';
+        ctx.lineWidth = 3;
+        roundRect(ctx, boxX, boxY, boxW, boxH, 28, false, true);
+
+        // Pill Biru "SCAN QR" (Kiri) & Pill Merah-Oranye "TAP" (Kanan)
+        const leftCenterX = W * 0.29;
+        const rightCenterX = W * 0.71;
+        const pillY = boxY + boxH * 0.11;
+        const pillW = W * 0.28;
+        const pillH = H * 0.062;
+
+        ctx.fillStyle = '#0b57d0';
+        roundRect(ctx, leftCenterX - pillW / 2, pillY, pillW, pillH, pillH / 2, true, false);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = `bold ${Math.round(W * 0.031)}px sans-serif`;
+        ctx.fillText('⛶  SCAN QR', leftCenterX, pillY + pillH * 0.66);
+
+        const gradTap = ctx.createLinearGradient(rightCenterX - pillW / 2, pillY, rightCenterX + pillW / 2, pillY);
+        gradTap.addColorStop(0, '#ea4335');
+        gradTap.addColorStop(1, '#fbbc04');
+        ctx.fillStyle = gradTap;
+        roundRect(ctx, rightCenterX - pillW / 2, pillY, pillW, pillH, pillH / 2, true, false);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText('))))  TAP NFC', rightCenterX, pillY + pillH * 0.66);
+
+        // Gambar QR Code di Sebelah Kiri
+        const qrSize = Math.min(W * 0.31, boxH * 0.62);
+        const qrY = pillY + pillH + boxH * 0.08;
+        ctx.fillStyle = '#ffffff';
+        roundRect(ctx, leftCenterX - qrSize / 2 - 10, qrY - 10, qrSize + 20, qrSize + 20, 14, true, false);
+        ctx.drawImage(qrImageElement, leftCenterX - qrSize / 2, qrY, qrSize, qrSize);
+
+        // Garis Pembatas Tengah 4 Warna Google
+        const divX = W / 2;
+        const divTop = qrY - 5;
+        const divSeg = qrSize / 4;
+        const gColors = ['#4285F4', '#EA4335', '#FBBC05', '#34A853'];
+        gColors.forEach((col, idx) => {
+          ctx.strokeStyle = col;
+          ctx.lineWidth = 6;
+          ctx.beginPath();
+          ctx.moveTo(divX, divTop + idx * divSeg);
+          ctx.lineTo(divX, divTop + (idx + 1) * divSeg);
+          ctx.stroke();
+        });
+
+        // Ikon Kotak NFC di Sebelah Kanan
+        drawNfcSquareBadge(ctx, rightCenterX - qrSize / 2, qrY, qrSize);
+
+        // Footer Bawah
+        ctx.fillStyle = '#1e293b';
+        ctx.font = `bold ${Math.round(W * 0.028)}px sans-serif`;
+        ctx.fillText('Pindai Kode QR / TAP NFC', W / 2, H * 0.89);
+        ctx.fillStyle = '#64748b';
+        ctx.font = `${Math.round(W * 0.024)}px sans-serif`;
+        ctx.fillText('untuk memberikan ulasan kepada kami', W / 2, H * 0.93);
+
+        // Nomor Seri Kecil (Untuk memudahkan Anwar menyortir kartu)
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = `bold ${Math.round(W * 0.02)}px monospace`;
+        ctx.fillText(`ID: ${cardId}`, W / 2, H * 0.975);
+      } 
+      else {
+        // ====================================================================
+        // DESAIN 2: CLASSIC GOOGLE FRAME ("Bantu kami dengan ulasan di Google")
+        // ====================================================================
+        // Bingkai Luar 4 Warna Google
+        ctx.fillStyle = '#FBBC05'; ctx.fillRect(0, 0, W / 2, H / 2); // Kuning Kiri Atas
+        ctx.fillStyle = '#EA4335'; ctx.fillRect(W / 2, 0, W / 2, H / 2); // Merah Kanan Atas
+        ctx.fillStyle = '#34A853'; ctx.fillRect(0, H / 2, W / 2, H / 2); // Hijau Kiri Bawah
+        ctx.fillStyle = '#4285F4'; ctx.fillRect(W / 2, H / 2, W / 2, H / 2); // Biru Kanan Bawah
+
+        // Kotak Putih Besar Melengkung di Tengah
+        const pad = W * 0.065;
+        ctx.fillStyle = '#ffffff';
+        roundRect(ctx, pad, pad, W - pad * 2, H - pad * 2, 48, true, false);
+
+        // Lingkaran Putih & Logo G di Atas
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(W / 2, pad + H * 0.05, W * 0.09, 0, Math.PI * 2);
+        ctx.fill();
+        drawGoogleGLogo(ctx, W / 2, pad + H * 0.055, W * 0.068);
+
+        // Teks Bilingual (Indonesia & Inggris)
+        ctx.fillStyle = '#202124';
+        ctx.textAlign = 'center';
+        ctx.font = `bold ${Math.round(W * 0.043)}px sans-serif`;
+        ctx.fillText('Bantu kami dengan ulasan di Google', W / 2, H * 0.245);
+        ctx.font = `${Math.round(W * 0.04)}px sans-serif`;
+        ctx.fillText('Help with a review on Google', W / 2, H * 0.295);
+
+        // 5 Bintang Emas
+        drawFiveStars(ctx, W / 2, H * 0.36, W * 0.032, W * 0.07);
+
+        // Kiri: Ilustrasi Tap NFC & Kanan: QR Code
+        const leftX = W * 0.29;
+        const rightX = W * 0.71;
+        const midY = H * 0.56;
+        const qrSize = Math.min(W * 0.31, H * 0.29);
+
+        drawHandTapNfcIcon(ctx, leftX, midY - qrSize * 0.08, qrSize * 0.85);
+        ctx.fillStyle = '#202124';
+        ctx.font = `bold ${Math.round(W * 0.035)}px sans-serif`;
+        ctx.fillText('Tap NFC', leftX, midY + qrSize * 0.62);
+
+        // Garis Tengah + Tulisan "Atau"
+        ctx.strokeStyle = '#334155';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(W / 2, midY - qrSize * 0.55);
+        ctx.lineTo(W / 2, midY - qrSize * 0.08);
+        ctx.moveTo(W / 2, midY + qrSize * 0.12);
+        ctx.lineTo(W / 2, midY + qrSize * 0.58);
+        ctx.stroke();
+        ctx.font = `bold ${Math.round(W * 0.032)}px sans-serif`;
+        ctx.fillText('Atau', W / 2, midY + qrSize * 0.04);
+
+        // Gambar QR di Kanan
+        ctx.drawImage(qrImageElement, rightX - qrSize / 2, midY - qrSize * 0.5, qrSize, qrSize);
+        ctx.font = `bold ${Math.round(W * 0.035)}px sans-serif`;
+        ctx.fillText('Scan QR', rightX, midY + qrSize * 0.62);
+
+        // Ucapan Terima Kasih di Bawah
+        ctx.fillStyle = '#202124';
+        ctx.font = `bold ${Math.round(W * 0.04)}px sans-serif`;
+        ctx.fillText('Terima kasih atas dukungan anda :)', W / 2, H * 0.825);
+        ctx.font = `${Math.round(W * 0.037)}px sans-serif`;
+        ctx.fillText('Thank you for your support :)', W / 2, H * 0.875);
+
+        // ID Seri Kecil di Pojok Bawah
+        ctx.fillStyle = '#64748b';
+        ctx.font = `bold ${Math.round(W * 0.02)}px monospace`;
+        ctx.fillText(`ID: ${cardId}`, W / 2, H * 0.92);
+      }
+    }
+
+    // Fungsi-Fungsi Vektor Pembantu (Logo Google, Bintang 5, Ikon NFC)
+    function drawGoogleGLogo(ctx, cx, cy, radius) {
+      ctx.save();
+      ctx.lineWidth = radius * 0.42;
+      ctx.lineCap = 'butt';
+      // Merah (Atas)
+      ctx.strokeStyle = '#EA4335';
+      ctx.beginPath(); ctx.arc(cx, cy, radius * 0.78, Math.PI * 1.15, Math.PI * 1.78); ctx.stroke();
+      // Kuning (Kiri)
+      ctx.strokeStyle = '#FBBC05';
+      ctx.beginPath(); ctx.arc(cx, cy, radius * 0.78, Math.PI * 0.82, Math.PI * 1.15); ctx.stroke();
+      // Hijau (Bawah)
+      ctx.strokeStyle = '#34A853';
+      ctx.beginPath(); ctx.arc(cx, cy, radius * 0.78, Math.PI * 0.22, Math.PI * 0.82); ctx.stroke();
+      // Biru (Kanan + Garis Horizontal Tengah)
+      ctx.strokeStyle = '#4285F4';
+      ctx.beginPath(); ctx.arc(cx, cy, radius * 0.78, -Math.PI * 0.04, Math.PI * 0.22); ctx.stroke();
+      ctx.fillStyle = '#4285F4';
+      ctx.fillRect(cx, cy - radius * 0.2, radius * 0.95, radius * 0.4);
+      ctx.restore();
+    }
+
+    function drawCornerBlobs(ctx, W, H) {
+      const drawBlob = (x, y, r, color) => {
+        const g = ctx.createRadialGradient(x, y, r * 0.1, x, y, r);
+        g.addColorStop(0, color);
+        g.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+      };
+      drawBlob(0, 0, W * 0.35, 'rgba(66, 133, 244, 0.45)');
+      drawBlob(W * 0.08, H * 0.15, W * 0.25, 'rgba(251, 188, 5, 0.45)');
+      drawBlob(W, 0, W * 0.35, 'rgba(52, 168, 83, 0.4)');
+      drawBlob(W * 0.9, H * 0.16, W * 0.25, 'rgba(234, 67, 53, 0.35)');
+      drawBlob(0, H, W * 0.35, 'rgba(251, 188, 5, 0.45)');
+      drawBlob(W, H, W * 0.35, 'rgba(66, 133, 244, 0.45)');
+    }
+
+    function drawNfcSquareBadge(ctx, x, y, size) {
+      ctx.save();
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = size * 0.045;
+      roundRect(ctx, x, y, size, size, size * 0.14, false, true);
+
+      // Gelombang Sinyal NFC di Atas
+      const cx = x + size / 2;
+      const cy = y + size * 0.52;
+      for (let i = 1; i <= 3; i++) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, size * (0.11 * i), -Math.PI * 0.78, -Math.PI * 0.22);
+        ctx.stroke();
+      }
+      ctx.fillStyle = '#0f172a';
+      ctx.font = `900 ${Math.round(size * 0.25)}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.fillText('NFC', cx, y + size * 0.84);
+      ctx.restore();
+    }
+
+    function drawHandTapNfcIcon(ctx, cx, cy, size) {
+      ctx.save();
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = size * 0.045;
+      const r = size * 0.42;
+      ctx.beginPath();
+      ctx.arc(cx, cy - size * 0.08, r, 0, Math.PI * 2);
+      ctx.stroke();
+      for (let i = 1; i <= 3; i++) {
+        ctx.beginPath();
+        ctx.arc(cx, cy + size * 0.05, r * (0.25 * i), -Math.PI * 0.78, -Math.PI * 0.22);
+        ctx.stroke();
+      }
+      // Ilustrasi Kartu/HP Miring di Bawah Lingkaran
+      ctx.fillStyle = '#ffffff';
+      ctx.translate(cx, cy + size * 0.28);
+      ctx.rotate(-0.5);
+      roundRect(ctx, -size * 0.18, -size * 0.22, size * 0.36, size * 0.48, 8, true, true);
+      ctx.restore();
+    }
+
+    function drawFiveStars(ctx, cx, cy, outerR, spacing) {
+      ctx.save();
+      ctx.fillStyle = '#FBBC05';
+      for (let i = -2; i <= 2; i++) {
+        drawSingleStar(ctx, cx + i * spacing, cy, 5, outerR, outerR * 0.48);
+      }
+      ctx.restore();
+    }
+
+    function drawSingleStar(ctx, cx, cy, spikes, outerR, innerR) {
+      let rot = Math.PI / 2 * 3;
+      let x = cx;
+      let y = cy;
+      const step = Math.PI / spikes;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - outerR);
+      for (let i = 0; i < spikes; i++) {
+        x = cx + Math.cos(rot) * outerR;
+        y = cy + Math.sin(rot) * outerR;
+        ctx.lineTo(x, y);
+        rot += step;
+        x = cx + Math.cos(rot) * innerR;
+        y = cy + Math.sin(rot) * innerR;
+        ctx.lineTo(x, y);
+        rot += step;
+      }
+      ctx.lineTo(cx, cy - outerR);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function roundRect(ctx, x, y, w, h, r, fill, stroke) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + w, y + h, x, y + h, r);
+      ctx.arcTo(x, y + h, x, y, r);
+      ctx.arcTo(x, y, x + w, y, r);
+      ctx.closePath();
+      if (fill) ctx.fill();
+      if (stroke) ctx.stroke();
+    }
+
+    // 5. EKSPOR PDF A4 OTOMATIS + TANDAI SUDAH DI-PRINT
+    async function createPrintablePDF(cardIds) {
+      if (!cardIds || cardIds.length === 0) {
+        alert('Tidak ada ID kartu untuk dicetak!');
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const sizeMode = paperSizeSelect.value;
+      const theme = designThemeSelect.value;
+
+      // Pengaturan Tata Letak di Kertas A4 (210 x 297 mm)
+      let cols = 2, rowsPerPage = 3, boxW = 92, boxH = 92, startX = 10, startY = 8, gapX = 6, gapY = 5;
+      if (sizeMode === 'a6-4') {
+        cols = 2; rowsPerPage = 2; boxW = 95; boxH = 135; startX = 7; startY = 10; gapX = 6; gapY = 7;
+      } else if (sizeMode === 'a5-2') {
+        cols = 1; rowsPerPage = 2; boxW = 140; boxH = 138; startX = 35; startY = 8; gapX = 0; gapY = 5;
+      }
+      const itemsPerPage = cols * rowsPerPage;
+
+      const renderCanvas = document.createElement('canvas');
+      renderCanvas.width = 900;
+      renderCanvas.height = sizeMode === 'square-6' ? 900 : 1260;
+
+      for (let i = 0; i < cardIds.length; i++) {
+        if (i > 0 && i % itemsPerPage === 0) doc.addPage();
+
+        const pageIdx = i % itemsPerPage;
+        const col = pageIdx % cols;
+        const row = Math.floor(pageIdx / cols);
+        const x = startX + col * (boxW + gapX);
+        const y = startY + row * (boxH + gapY);
+
+        const id = cardIds[i];
+        const qrDataUrl = await generateQRDataURL(`${BASE_CLIENT_URL}?id=${id}`);
+        const qrImg = await loadImageElement(qrDataUrl);
+
+        renderCardDesignToCanvas(renderCanvas, theme, id, qrImg);
+        const cardDataUrl = renderCanvas.toDataURL('image/jpeg', 0.95);
+
+        doc.addImage(cardDataUrl, 'JPEG', x, y, boxW, boxH);
+        // Garis bantu potong tipis
+        doc.setDrawColor(210, 210, 210);
+        doc.setLineWidth(0.2);
+        doc.rect(x, y, boxW, boxH, 'S');
+      }
+
+      doc.save(`Cetak-NFC-${theme}-${cardIds[0]}-sd-${cardIds[cardIds.length - 1]}.pdf`);
+      await markBatchAsPrinted(cardIds);
+    }
+
+    // Tombol 1: Buat Batch Baru Sesuai Kapasitas Halaman A4 + Cetak PDF
+    generateBtn.addEventListener('click', async () => {
+      generateBtn.disabled = true;
+      generateBtn.textContent = '⏳ Memproses Desain & PDF...';
+      try {
+        let maxNum = 0;
+        allCardsData.forEach(c => {
+          const num = parseInt(c.id, 10);
+          if (!isNaN(num) && num > maxNum) maxNum = num;
+        });
+
+        const batchCount = paperSizeSelect.value === 'square-6' ? 6 : (paperSizeSelect.value === 'a6-4' ? 4 : 2);
+        const newBatch = [];
+        for (let i = 1; i <= batchCount; i++) {
+          const formattedId = String(maxNum + i).padStart(3, '0');
+          newBatch.push({ id: formattedId, pin: null, target_url: null, is_printed: true });
+        }
+
+        const { error } = await supabaseClient.from('nfc_cards').insert(newBatch);
+        if (error) throw error;
+
+        await createPrintablePDF(newBatch.map(c => c.id));
+      } catch (err) {
+        alert('Gagal membuat batch baru: ' + err.message);
+      } finally {
+        generateBtn.disabled = false;
+        generateBtn.textContent = '⚡ Buat Batch Kartu Baru + Download PDF';
+      }
+    });
+
+    // Tombol 2: Cetak Semua Kartu yang Statusnya "Belum Print"
+    document.getElementById('print-unprinted-btn').addEventListener('click', async () => {
+      const unprintedIds = allCardsData.filter(c => !c.is_printed).map(c => c.id);
+      if (unprintedIds.length === 0) {
+        alert('Semua kartu di database sudah berstatus "Sudah Print"!');
+        return;
+      }
+      await createPrintablePDF(unprintedIds);
+    });
+
+    // Tombol 3: Cetak Rentang ID
+    document.getElementById('reprint-batch-btn').addEventListener('click', async () => {
+      const s = parseInt(document.getElementById('print-start-id').value, 10);
+      const e = parseInt(document.getElementById('print-end-id').value, 10);
+      if (isNaN(s) || isNaN(e) || e < s) return alert('Rentang ID tidak valid!');
+      const ids = [];
+      for (let i = s; i <= e; i++) ids.push(String(i).padStart(3, '0'));
+      await createPrintablePDF(ids);
+    });
+
+    window.printSingleQR = async function(id) {
+      await createPrintablePDF([id]);
+    };
+
+    // 6. LAYANAN TERIMA BERES & AFTER-SALES (SIMPAN NAMA TOKO + LINK 5 BINTANG)
     window.quickSearchStoreForCard = async function(id, defaultPin) {
-      const storeQuery = prompt(`[Layanan Terima Beres - ID ${id}]\nKetik Nama Toko / Bisnis Klien di Google Maps\n(Contoh: CoffeeTalk Sunter Kemayoran):`);
+      const storeQuery = prompt(`[Layanan Terima Beres / After-Sales - ID ${id}]\nKetik Nama Toko Klien di Google Maps:`);
       if (!storeQuery || !storeQuery.trim()) return;
 
       try {
@@ -328,280 +815,58 @@
           body: JSON.stringify({ textQuery: storeQuery.trim(), languageCode: 'id' })
         });
         const data = await res.json();
-        if (!data.places || data.places.length === 0) {
-          alert('Toko tidak ditemukan di Google Maps. Coba nama yang lebih spesifik.');
-          return;
-        }
+        if (!data.places || data.places.length === 0) return alert('Toko tidak ditemukan.');
 
         const top = data.places[0];
         const name = top.displayName ? top.displayName.text : storeQuery;
         const addr = top.formattedAddress || '';
         const reviewUrl = `https://search.google.com/local/writereview?placeid=${top.id}`;
 
-        const confirmPin = prompt(`✅ Ditemukan:\n📍 ${name}\n🏠 ${addr}\n\nMasukkan PIN 4 Angka untuk mengunci kartu [${id}]:`, defaultPin);
+        const confirmPin = prompt(`✅ Ditemukan:\n📍 ${name}\n🏠 ${addr}\n\nMasukkan PIN 4 Angka untuk Kartu [${id}]:`, defaultPin);
         if (confirmPin === null) return;
 
-        const { error } = await supabaseClient
-          .from('nfc_cards')
-          .update({ target_url: reviewUrl, pin: confirmPin.trim() || '1234' })
-          .eq('id', id);
+        await supabaseClient.from('nfc_cards').update({
+          store_name: name,
+          target_url: reviewUrl,
+          pin: confirmPin.trim() || '1234'
+        }).eq('id', id);
 
-        if (error) throw error;
-        alert(`Mantap! Kartu ${id} sekarang terkunci ke Pop-up Bintang 5: ${name}`);
         loadCards();
       } catch (err) {
-        alert('Gagal mengatur toko: ' + err.message);
+        alert('Error: ' + err.message);
       }
     };
 
     window.resetCard = async function(id) {
-      if (!confirm(`Kosongkan / Reset Kartu ID [${id}] agar kembali menjadi kartu baru?`)) return;
-      await supabaseClient.from('nfc_cards').update({ target_url: null, pin: null }).eq('id', id);
+      if (!confirm(`Reset Kartu ID [${id}] menjadi kosong?`)) return;
+      await supabaseClient.from('nfc_cards').update({ store_name: null, target_url: null, pin: null }).eq('id', id);
       loadCards();
     };
 
-    // 4. STUDIO DESAIN CUSTOM (LIVE PREVIEW DI CANVAS)
-    async function initPreviewQR() {
-      const qrDataUrl = await generateQRDataURL(`${BASE_CLIENT_URL}?id=001`);
-      sampleQrImage = await loadImageElement(qrDataUrl);
-    }
-
-    bgUpload.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = async (ev) => {
-        uploadedBgImage = await loadImageElement(ev.target.result);
-        drawStudioPreview();
-      };
-      reader.readAsDataURL(file);
-    });
-
-    [layoutModeSelect, qrSizeSlider, qrXSlider, qrYSlider].forEach(el => {
-      el.addEventListener('input', () => {
-        document.getElementById('val-qr-size').textContent = qrSizeSlider.value;
-        document.getElementById('val-qr-x').textContent = qrXSlider.value;
-        document.getElementById('val-qr-y').textContent = qrYSlider.value;
-        drawStudioPreview();
-      });
-    });
-
-    function drawStudioPreview() {
-      const isA6 = layoutModeSelect.value === '4-a6';
-      previewCanvas.width = isA6 ? 300 : 400;
-      previewCanvas.height = isA6 ? 420 : 250;
-
-      const w = previewCanvas.width;
-      const h = previewCanvas.height;
-      previewCtx.clearRect(0, 0, w, h);
-
-      // Gambar Background Custom atau Default
-      if (uploadedBgImage) {
-        previewCtx.drawImage(uploadedBgImage, 0, 0, w, h);
-      } else {
-        previewCtx.fillStyle = '#ffffff';
-        previewCtx.fillRect(0, 0, w, h);
-        previewCtx.strokeStyle = '#94a3b8';
-        previewCtx.lineWidth = 2;
-        previewCtx.strokeRect(4, 4, w - 8, h - 8);
-        previewCtx.fillStyle = '#0f172a';
-        previewCtx.font = 'bold 16px sans-serif';
-        previewCtx.textAlign = 'center';
-        previewCtx.fillText('TAP / SCAN UNTUK REVIEW ★5', w / 2, 32);
-      }
-
-      // Gambar QR Code sesuai slider X, Y, dan Size
-      if (sampleQrImage) {
-        const qrSize = (parseInt(qrSizeSlider.value, 10) / 100) * Math.min(w, h);
-        const centerX = (parseInt(qrXSlider.value, 10) / 100) * w;
-        const centerY = (parseInt(qrYSlider.value, 10) / 100) * h;
-        const qrX = centerX - qrSize / 2;
-        const qrY = centerY - qrSize / 2;
-
-        // Kotak bantalan putih di belakang QR agar mudah di-scan
-        previewCtx.fillStyle = '#ffffff';
-        previewCtx.fillRect(qrX - 6, qrY - 6, qrSize + 12, qrSize + 22);
-        previewCtx.drawImage(sampleQrImage, qrX, qrY, qrSize, qrSize);
-
-        // Label Nomor Seri Kecil di bawah QR
-        previewCtx.fillStyle = '#0f172a';
-        previewCtx.font = 'bold 11px monospace';
-        previewCtx.textAlign = 'center';
-        previewCtx.fillText('ID: 001', centerX, qrY + qrSize + 12);
-      }
-    }
-
-    // 5. GENERATE 10 KARTU BARU + EXPORT PDF A4
-    generateBtn.addEventListener('click', async () => {
-      generateBtn.disabled = true;
-      generateBtn.textContent = '⏳ Memproses PDF...';
-
-      try {
-        let maxNum = 0;
-        allCardsData.forEach(c => {
-          const num = parseInt(c.id, 10);
-          if (!isNaN(num) && num > maxNum) maxNum = num;
-        });
-
-        const countToMake = layoutModeSelect.value === '4-a6' ? 4 : 10;
-        const newCardsBatch = [];
-        for (let i = 1; i <= countToMake; i++) {
-          const formattedId = String(maxNum + i).padStart(3, '0');
-          newCardsBatch.push({ id: formattedId, pin: null, target_url: null });
-        }
-
-        const { error } = await supabaseClient.from('nfc_cards').insert(newCardsBatch);
-        if (error) throw error;
-
-        await createPrintablePDF(newCardsBatch.map(c => c.id));
-        loadCards();
-      } catch (err) {
-        alert('Gagal generate kartu: ' + err.message);
-      } finally {
-        generateBtn.disabled = false;
-        generateBtn.textContent = '⚡ Generate 10 ID Baru + Download PDF';
-      }
-    });
-
-    // Cetak Ulang Rentang ID
-    document.getElementById('reprint-batch-btn').addEventListener('click', async () => {
-      const start = parseInt(document.getElementById('print-start-id').value, 10);
-      const end = parseInt(document.getElementById('print-end-id').value, 10);
-      if (isNaN(start) || isNaN(end) || end < start) {
-        alert('Rentang ID tidak valid!');
-        return;
-      }
-      const ids = [];
-      for (let i = start; i <= end; i++) {
-        ids.push(String(i).padStart(3, '0'));
-      }
-      await createPrintablePDF(ids);
-    });
-
-    window.printSingleQR = async function(id) {
-      await createPrintablePDF([id]);
-    };
-
-    // 6. MESIN PERAKIT PDF A4 (MENDUKUNG DESAIN CUSTOM & UKURAN A6 / KARTU)
-    async function createPrintablePDF(cardIds) {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-      const isA6 = layoutModeSelect.value === '4-a6';
-
-      // Konfigurasi ukuran di atas kertas A4 (210 x 297 mm)
-      const cols = 2;
-      const rowsPerPage = isA6 ? 2 : 5;
-      const itemsPerPage = cols * rowsPerPage;
-      const boxW = isA6 ? 92 : 85;
-      const boxH = isA6 ? 132 : 52;
-      const startX = isA6 ? 11 : 17;
-      const startY = isA6 ? 14 : 16;
-      const gapX = 6;
-      const gapY = isA6 ? 6 : 3;
-
-      for (let i = 0; i < cardIds.length; i++) {
-        if (i > 0 && i % itemsPerPage === 0) {
-          doc.addPage();
-        }
-
-        const pageIndex = i % itemsPerPage;
-        const col = pageIndex % cols;
-        const row = Math.floor(pageIndex / cols);
-        const x = startX + col * (boxW + gapX);
-        const y = startY + row * (boxH + gapY);
-
-        const id = cardIds[i];
-        const fullUrl = `${BASE_CLIENT_URL}?id=${id}`;
-        const qrDataUrl = await generateQRDataURL(fullUrl);
-
-        // Jika pengguna meng-upload gambar Desain Stiker Custom
-        if (uploadedBgImage) {
-          const cardCanvas = document.createElement('canvas');
-          cardCanvas.width = isA6 ? 920 : 850;
-          cardCanvas.height = isA6 ? 1320 : 520;
-          const ctx = cardCanvas.getContext('2d');
-
-          ctx.drawImage(uploadedBgImage, 0, 0, cardCanvas.width, cardCanvas.height);
-
-          const qrImg = await loadImageElement(qrDataUrl);
-          const qrSize = (parseInt(qrSizeSlider.value, 10) / 100) * Math.min(cardCanvas.width, cardCanvas.height);
-          const centerX = (parseInt(qrXSlider.value, 10) / 100) * cardCanvas.width;
-          const centerY = (parseInt(qrYSlider.value, 10) / 100) * cardCanvas.height;
-          const qx = centerX - qrSize / 2;
-          const qy = centerY - qrSize / 2;
-
-          ctx.fillStyle = '#ffffff';
-          ctx.fillRect(qx - 14, qy - 14, qrSize + 28, qrSize + 52);
-          ctx.drawImage(qrImg, qx, qy, qrSize, qrSize);
-
-          ctx.fillStyle = '#0f172a';
-          ctx.font = 'bold 24px monospace';
-          ctx.textAlign = 'center';
-          ctx.fillText(`ID: ${id}`, centerX, qy + qrSize + 28);
-
-          const finalCardDataUrl = cardCanvas.toDataURL('image/jpeg', 0.92);
-          doc.addImage(finalCardDataUrl, 'JPEG', x, y, boxW, boxH);
-          doc.setDrawColor(200, 200, 200);
-          doc.rect(x, y, boxW, boxH, 'S');
-        } 
-        // Jika tanpa gambar custom (Mode Teknis Bersih)
-        else {
-          doc.setDrawColor(180, 180, 180);
-          doc.roundedRect(x, y, boxW, boxH, 3, 3, 'S');
-          const qrMm = isA6 ? 52 : 36;
-          doc.addImage(qrDataUrl, 'PNG', x + (boxW - qrMm) / 2, y + 6, qrMm, qrMm);
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(11);
-          doc.text(`ID KARTU: ${id}`, x + boxW / 2, y + qrMm + 12, { align: 'center' });
-        }
-      }
-
-      doc.save(`Cetak-Stiker-NFC-${cardIds[0]}-sd-${cardIds[cardIds.length - 1]}.pdf`);
-    }
-
-    // 7. FITUR WEB NFC AUTO-WRITER (TULIS CIP BERURUTAN TANPA KETIK MANUAL)
-    let nfcCurrentNum = 3;
+    // 7. WEB NFC AUTO-WRITER
+    let nfcCurrentNum = 1;
     document.getElementById('start-nfc-writer-btn').addEventListener('click', async () => {
       nfcCurrentNum = parseInt(document.getElementById('nfc-start-num').value, 10) || 1;
-      const statusBox = document.getElementById('nfc-status-box');
-      const targetLabel = document.getElementById('nfc-target-label');
-      const subMsg = document.getElementById('nfc-sub-msg');
-
-      statusBox.classList.remove('hidden');
+      const box = document.getElementById('nfc-status-box');
+      box.classList.remove('hidden');
 
       if (!('NDEFReader' in window)) {
-        targetLabel.textContent = '⚠️ Gunakan Chrome di Layar HP';
-        subMsg.innerHTML = 'Fitur Web NFC hanya aktif jika halaman ini dibuka langsung di browser <b>Google Chrome HP Android</b> (lepas mode monitor DeX saat ingin menempel cip NFC).';
+        box.innerHTML = '⚠️ Buka di Google Chrome HP Android (mode non-DeX) saat ingin menulis cip NFC.';
         return;
       }
-
       try {
         const ndef = new NDEFReader();
         await ndef.scan();
-        updateNfcBanner();
-
+        box.innerHTML = `📡 Tempel cip NTAG215 untuk mengisi ID: <b>${String(nfcCurrentNum).padStart(3, '0')}</b>`;
         ndef.onreading = async () => {
-          const formattedId = String(nfcCurrentNum).padStart(3, '0');
-          const urlToWrite = `${BASE_CLIENT_URL}?id=${formattedId}`;
-          try {
-            await ndef.write({ records: [{ recordType: "url", data: urlToWrite }] });
-            subMsg.innerHTML = `✅ <b>ID ${formattedId} BERHASIL DITULIS!</b> Angkat cip & tempelkan cip berikutnya...`;
-            nfcCurrentNum++;
-            document.getElementById('nfc-start-num').value = nfcCurrentNum;
-            setTimeout(updateNfcBanner, 1200);
-          } catch (writeErr) {
-            subMsg.textContent = '❌ Gagal menulis cip, coba tempelkan lebih rapat.';
-          }
+          const fid = String(nfcCurrentNum).padStart(3, '0');
+          await ndef.write({ records: [{ recordType: "url", data: `${BASE_CLIENT_URL}?id=${fid}` }] });
+          box.innerHTML = `✅ ID ${fid} Berhasil! Angkat & tempel cip berikutnya...`;
+          nfcCurrentNum++;
+          document.getElementById('nfc-start-num').value = nfcCurrentNum;
         };
       } catch (err) {
-        targetLabel.textContent = 'Izin NFC Ditolak / Tidak Aktif';
-        subMsg.textContent = 'Pastikan fitur NFC di HP Samsung Anda sudah menyala: ' + err.message;
-      }
-
-      function updateNfcBanner() {
-        const nextId = String(nfcCurrentNum).padStart(3, '0');
-        targetLabel.textContent = `📡 Siap Menulis ID: ${nextId}`;
-        subMsg.textContent = `Tempelkan cip NTAG215 ke punggung HP Anda untuk mengisi ?id=${nextId}`;
+        box.innerHTML = '❌ Pastikan NFC HP menyala: ' + err.message;
       }
     });
 
@@ -610,7 +875,7 @@
         qrContainer.innerHTML = '';
         const tempDiv = document.createElement('div');
         qrContainer.appendChild(tempDiv);
-        new QRCode(tempDiv, { text: urlText, width: 350, height: 350, correctLevel: QRCode.CorrectLevel.H });
+        new QRCode(tempDiv, { text: urlText, width: 450, height: 450, correctLevel: QRCode.CorrectLevel.H });
         setTimeout(() => {
           const canvas = tempDiv.querySelector('canvas');
           const img = tempDiv.querySelector('img');
