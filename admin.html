@@ -13,15 +13,15 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background-color: #f1f5f9; color: #0f172a; padding: 20px; }
-    .container { max-width: 1140px; margin: 0 auto; }
+    .container { max-width: 1160px; margin: 0 auto; }
     
     .login-box { background: #fff; max-width: 380px; margin: 80px auto; padding: 32px 24px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; }
     .login-box h2 { margin-bottom: 8px; font-size: 20px; }
     .login-box p { color: #64748b; font-size: 13px; margin-bottom: 20px; }
-    input, select { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 13.5px; outline: none; background: #fff; }
+    input, select { width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 9px; font-size: 13px; outline: none; background: #fff; }
     input:focus, select:focus { border-color: #2563eb; }
 
-    .header { background: #fff; padding: 20px 24px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 18px; }
+    .header { background: #fff; padding: 18px 24px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 18px; }
     .header h1 { font-size: 20px; color: #1e293b; }
     .header p { font-size: 13px; color: #64748b; margin-top: 4px; }
     
@@ -37,21 +37,24 @@
     .btn-sm { padding: 6px 10px; font-size: 11.5px; border-radius: 7px; }
 
     .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 18px; }
-    .stat-card { background: #fff; padding: 16px 18px; border-radius: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+    .stat-card { background: #fff; padding: 15px 18px; border-radius: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
     .stat-card span { font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; }
-    .stat-card h3 { font-size: 26px; margin-top: 4px; color: #0f172a; }
+    .stat-card h3 { font-size: 25px; margin-top: 4px; color: #0f172a; }
 
-    .studio-grid { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 16px; margin-bottom: 18px; }
-    @media (max-width: 850px) { .studio-grid { grid-template-columns: 1fr; } }
+    .studio-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 16px; margin-bottom: 18px; }
+    @media (max-width: 880px) { .studio-grid { grid-template-columns: 1fr; } }
     .panel-box { background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
-    .panel-box h3 { font-size: 16px; margin-bottom: 6px; color: #1e293b; }
-    .panel-box p { font-size: 12.5px; color: #64748b; margin-bottom: 14px; line-height: 1.4; }
+    .panel-box h3 { font-size: 15.5px; margin-bottom: 6px; color: #1e293b; }
+    .panel-box p { font-size: 12px; color: #64748b; margin-bottom: 14px; line-height: 1.4; }
     
     .control-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-    .control-group label { display: block; font-size: 11.5px; font-weight: 600; color: #475569; margin-bottom: 4px; }
+    .control-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .control-group label { display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px; }
     
-    .preview-stage { background: #cbd5e1; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    #template-preview-canvas { max-width: 100%; height: auto; max-height: 290px; border-radius: 10px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+    .calc-info-banner { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 10px 12px; border-radius: 10px; font-size: 12px; font-weight: 600; margin-bottom: 12px; line-height: 1.4; }
+
+    .preview-stage { background: #cbd5e1; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    #template-preview-canvas { max-width: 100%; height: auto; max-height: 250px; border-radius: 10px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
 
     .filter-bar { background: #fff; padding: 14px 18px; border-radius: 16px 16px 0 0; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
     .filter-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -86,7 +89,7 @@
     </form>
   </div>
 
-  <!-- LAYAR 2: DASHBOARD & STUDIO CETAK BUILT-IN -->
+  <!-- LAYAR 2: DASHBOARD & MODULAR PRINT STUDIO -->
   <div id="dashboard-view" class="container hidden">
     <div class="header">
       <div>
@@ -123,12 +126,13 @@
       </div>
     </div>
 
-    <!-- STUDIO DESAIN BUILT-IN -->
+    <!-- STUDIO DESAIN & KALKULATOR TATA LETAK KERTAS MODULAR -->
     <div class="studio-grid">
       <div class="panel-box">
-        <h3>🎨 Studio Desain & Ukuran Stiker Akrilik 10x10 cm</h3>
-        <p>Desain digambar otomatis kualitas vektor tajam dan dilengkapi label <b>By Kreatifedia</b>.</p>
+        <h3>🎨 Pengaturan Desain, Ukuran Kertas & Dimensi Stiker (cm)</h3>
+        <p>Atur bebas kombinasi <b>Ukuran Kertas (A3+/A4)</b>, <b>Ukuran Stiker (cm x cm)</b>, dan <b>Mode Gabung/Satuan</b>.</p>
         
+        <!-- Baris 1: Tema Desain & Watermark Brand -->
         <div class="control-grid">
           <div class="control-group">
             <label>1. Pilih Tema Desain Kartu:</label>
@@ -138,33 +142,63 @@
             </select>
           </div>
           <div class="control-group">
-            <label>2. Label Brand di Bagian Bawah Kartu:</label>
+            <label>2. Label Brand di Bawah Kartu:</label>
             <input type="text" id="brand-label-input" value="By Kreatifedia">
           </div>
-          <div class="control-group" style="grid-column: span 2;">
-            <label>3. Pilih Format Lembaran Cetak PDF (Cocok untuk Akrilik 10x10 cm):</label>
-            <select id="paper-size-select">
-              <option value="a4-square-10">🎯 Lembaran Stiker A4: Isi 4 Kotak FULL 10 x 10 cm (Pas 100% Akrilik 10x10 cm)</option>
-              <option value="a4-square-95">🎯 Lembaran Stiker A4: Isi 4 Kotak 9.5 x 9.5 cm (Ada List Tepi 2.5mm Biar Gampang Tempel)</option>
-              <option value="a3-square-10">🎯 Lembaran Besar A3+ (32x48cm): Isi 12 Kotak FULL 10 x 10 cm (1 Lembar Muat 10-12 Pcs!)</option>
-              <option value="square-6">Lembaran Stiker A4: Isi 6 Kotak 9.2 x 9.2 cm (Ada List Tepi 4mm di Akrilik 10x10)</option>
-              <option value="single-10x10">🔥 1 Halaman = 1 Desain Pas Ukuran 10 x 10 cm (Jika Percetakan Minta File Satuan)</option>
-              <option value="a6-4">Lembaran Stiker A4: Isi 4 Ukuran A6 (9.5 x 13.5 cm)</option>
+        </div>
+
+        <!-- Baris 2: Mode Susunan File & Pilihan Ukuran Kertas -->
+        <div class="control-grid">
+          <div class="control-group">
+            <label>3. Mode Susunan File PDF:</label>
+            <select id="export-mode-select">
+              <option value="sheet">🗂️ Digabung dalam Lembaran Kertas (A3+ / A4)</option>
+              <option value="single">📄 Dipisah Per Desain (1 Halaman = 1 Desain Pas Ukuran)</option>
+            </select>
+          </div>
+          <div class="control-group" id="paper-format-group">
+            <label>4. Pilih Ukuran Lembaran Kertas:</label>
+            <select id="paper-format-select">
+              <option value="a3-shopee">🛒 A3+ Area Cetak Shopee (31 x 47 cm - enmo.print)</option>
+              <option value="a3-full">A3+ Standar Percetakan (32 x 48 cm)</option>
+              <option value="a4">A4 Standar HVS (21 x 29.7 cm)</option>
+              <option value="a5">A5 Setengah HVS (14.8 x 21 cm)</option>
             </select>
           </div>
         </div>
 
+        <!-- Baris 3: Ukuran Desain Stiker (cm x cm) & Jarak Kiss-Cut -->
+        <div class="control-grid-3">
+          <div class="control-group">
+            <label>5. Lebar Desain (cm):</label>
+            <input type="number" id="design-width-cm" value="9.8" step="0.1" min="3" max="30">
+          </div>
+          <div class="control-group">
+            <label>6. Tinggi Desain (cm):</label>
+            <input type="number" id="design-height-cm" value="9.8" step="0.1" min="3" max="45">
+          </div>
+          <div class="control-group" id="gap-mm-group">
+            <label>7. Jarak Antar Stiker (mm):</label>
+            <input type="number" id="design-gap-mm" value="3" step="0.5" min="0" max="20" title="Jarak aman untuk pisau Kiss-Cut mesin percetakan">
+          </div>
+        </div>
+
+        <!-- Info Kalkulator Otomatis: Muat Berapa Pcs per Lembar -->
+        <div id="layout-calc-banner" class="calc-info-banner">
+          📐 Menghitung kapasitas kertas...
+        </div>
+
         <div class="preview-stage">
           <canvas id="template-preview-canvas" width="800" height="800"></canvas>
-          <span style="font-size: 11.5px; color: #1e293b; font-weight: 600; margin-top: 8px;">👆 Live Preview Desain + Label "By Kreatifedia"</span>
+          <span style="font-size: 11px; color: #1e293b; font-weight: 600; margin-top: 6px;">👆 Live Preview Proporsi Desain + Label "By Kreatifedia"</span>
         </div>
       </div>
 
-      <!-- Kanan: Cetak PDF & Asisten Cepat Aplikasi NFC Tools -->
+      <!-- Kanan: Ekspor PDF & Asisten Cepat Aplikasi NFC Tools -->
       <div style="display: flex; flex-direction: column; gap: 16px;">
         <div class="panel-box">
-          <h3>🖨️ Ekspor PDF ke Percetakan</h3>
-          <p>Pilih cetak semua yang belum diprint, atau masukkan rentang ID (misal <b>001</b> s/d <b>010</b>). Status otomatis berubah jadi <b>"Sudah Print"</b>.</p>
+          <h3>🖨️ Ekspor File Siap Kirim ke Percetakan / Shopee</h3>
+          <p>Pilih rentang ID (misal <b>001</b> s/d <b>010</b>) untuk digabung ke dalam 1 file PDF A3+ siap kirim ke email <i>enmo.print@gmail.com</i>!</p>
           
           <button id="print-unprinted-btn" class="btn btn-green" style="width: 100%; justify-content: center; margin-bottom: 14px;">
             🖨️ Cetak Semua Kartu yang "Belum Print" Sekarang
@@ -255,11 +289,25 @@
     const refreshBtn = document.getElementById('refresh-btn');
     const qrContainer = document.getElementById('qr-hidden-container');
 
+    // Elemen Modular Print Studio
     const designThemeSelect = document.getElementById('design-theme-select');
     const brandLabelInput = document.getElementById('brand-label-input');
-    const paperSizeSelect = document.getElementById('paper-size-select');
+    const exportModeSelect = document.getElementById('export-mode-select');
+    const paperFormatSelect = document.getElementById('paper-format-select');
+    const designWidthInput = document.getElementById('design-width-cm');
+    const designHeightInput = document.getElementById('design-height-cm');
+    const designGapInput = document.getElementById('design-gap-mm');
+    const layoutCalcBanner = document.getElementById('layout-calc-banner');
     const previewCanvas = document.getElementById('template-preview-canvas');
     const tableSearchInput = document.getElementById('table-search-input');
+
+    // Daftar Ukuran Kertas dalam satuan Milimeter (mm)
+    const PAPER_DIMENSIONS = {
+      'a3-shopee': { w: 310, h: 470, label: 'A3+ Area Cetak Shopee (31 x 47 cm)' },
+      'a3-full':   { w: 320, h: 480, label: 'A3+ Standar (32 x 48 cm)' },
+      'a4':        { w: 210, h: 297, label: 'A4 Standar HVS (21 x 29.7 cm)' },
+      'a5':        { w: 148, h: 210, label: 'A5 Setengah HVS (14.8 x 21 cm)' }
+    };
 
     let allCardsData = [];
     let currentFilter = 'all';
@@ -280,22 +328,69 @@
       }
     });
 
-    // 2. Muat Data Kartu dari Supabase
+    // 2.Kalkulator Otomatis Tata Letak Kertas vs Ukuran Desain (cm)
+    function calculateSheetLayout() {
+      const mode = exportModeSelect.value;
+      const paperKey = paperFormatSelect.value;
+      const paper = PAPER_DIMENSIONS[paperKey];
+      const boxW = Math.max(20, (parseFloat(designWidthInput.value) || 10) * 10); // cm ke mm
+      const boxH = Math.max(20, (parseFloat(designHeightInput.value) || 10) * 10); // cm ke mm
+      const gap = Math.max(0, parseFloat(designGapInput.value) || 0);
+
+      document.getElementById('paper-format-group').style.opacity = mode === 'single' ? '0.4' : '1';
+      document.getElementById('gap-mm-group').style.opacity = mode === 'single' ? '0.4' : '1';
+
+      if (mode === 'single') {
+        layoutCalcBanner.innerHTML = `📄 <b>Mode Satuan Aktif:</b> Setiap halaman PDF berukuran pas <b>${(boxW/10).toFixed(1)} x ${(boxH/10).toFixed(1)} cm</b> (1 Halaman = 1 Desain Tanpa Sisa Kertas).`;
+        return { mode: 'single', pageW: boxW, pageH: boxH, boxW, boxH, cols: 1, rows: 1, perPage: 1 };
+      }
+
+      const cols = Math.floor((paper.w + gap) / (boxW + gap));
+      const rows = Math.floor((paper.h + gap) / (boxH + gap));
+      const perPage = Math.max(0, cols * rows);
+
+      if (perPage === 0) {
+        layoutCalcBanner.innerHTML = `⚠️ <b>Ukuran desain (${(boxW/10)}x${(boxH/10)} cm) terlalu besar</b> untuk kertas ${paper.label}! Kecilkan ukuran desain atau pilih kertas A3+.`;
+      } else {
+        const totalGridW = cols * boxW + (cols - 1) * gap;
+        const totalGridH = rows * boxH + (rows - 1) * gap;
+        const startX = (paper.w - totalGridW) / 2;
+        const startY = (paper.h - totalGridH) / 2;
+
+        layoutCalcBanner.innerHTML = `✅ <b>Kalkulasi Otomatis:</b> Di atas kertas <b>${paper.label}</b>, ukuran desain <b>${(boxW/10)} x ${(boxH/10)} cm</b> (jarak ${gap}mm) akan muat <b>${perPage} Pcs per Lembar</b> (${cols} kolom ke samping × ${rows} baris ke bawah).`;
+        return { mode: 'sheet', pageW: paper.w, pageH: paper.h, boxW, boxH, gap, cols, rows, perPage, startX, startY };
+      }
+      return null;
+    }
+
+    [designThemeSelect, brandLabelInput, exportModeSelect, paperFormatSelect, designWidthInput, designHeightInput, designGapInput].forEach(el => {
+      el.addEventListener('input', updateStudioPreview);
+      el.addEventListener('change', updateStudioPreview);
+    });
+
+    function updateStudioPreview() {
+      const layout = calculateSheetLayout();
+      const wCm = parseFloat(designWidthInput.value) || 10;
+      const hCm = parseFloat(designHeightInput.value) || 10;
+      previewCanvas.width = 900;
+      previewCanvas.height = Math.round(900 * (hCm / wCm));
+      if (sampleQrImg) {
+        renderCardDesignToCanvas(previewCanvas, designThemeSelect.value, '001', sampleQrImg);
+      }
+    }
+
+    // 3. Muat Data Kartu dari Supabase
     async function loadCards() {
       const { data, error } = await supabaseClient
         .from('nfc_cards')
         .select('*')
         .order('id', { ascending: true });
 
-      if (error) {
-        alert('Gagal mengambil data: ' + error.message);
-        return;
-      }
+      if (error) return alert('Gagal mengambil data: ' + error.message);
       allCardsData = data || [];
       updateStatsAndTable();
     }
 
-    // 3. Filter & Pencarian Tabel
     window.setFilter = function(filterType, btnEl) {
       currentFilter = filterType;
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -419,20 +514,6 @@
     };
 
     // 5. MESIN PENGGAMBAR DESAIN KARTU OTOMATIS + BRANDING "By Kreatifedia"
-    designThemeSelect.addEventListener('change', updateStudioPreview);
-    brandLabelInput.addEventListener('input', updateStudioPreview);
-    paperSizeSelect.addEventListener('change', updateStudioPreview);
-
-    function updateStudioPreview() {
-      const sizeMode = paperSizeSelect.value;
-      const isA6 = (sizeMode === 'a6-4');
-      previewCanvas.width = 900;
-      previewCanvas.height = isA6 ? 1240 : 900;
-      if (sampleQrImg) {
-        renderCardDesignToCanvas(previewCanvas, designThemeSelect.value, '001', sampleQrImg);
-      }
-    }
-
     function renderCardDesignToCanvas(canvas, theme, cardId, qrImageElement) {
       const ctx = canvas.getContext('2d');
       const W = canvas.width;
@@ -713,111 +794,80 @@
       if (stroke) ctx.stroke();
     }
 
-    // 6. EKSPOR PDF (MENDUKUNG A4 FULL 10x10, A4 9.5x9.5, A3+ FULL 10x10, DAN SATUAN)
+    // 6. EKSPOR PDF MODULAR (OTOMATIS MENGIKUTI KERTAS, UKURAN CM, & MODE SUSUNAN)
     async function createPrintablePDF(cardIds) {
       if (!cardIds || cardIds.length === 0) return alert('Tidak ada ID kartu untuk dicetak!');
 
+      const layout = calculateSheetLayout();
+      if (!layout || layout.perPage === 0) {
+        return alert('Ukuran desain terlalu besar untuk kertas yang dipilih! Sesuaikan ukuran terlebih dahulu.');
+      }
+
       const { jsPDF } = window.jspdf;
-      const sizeMode = paperSizeSelect.value;
       const theme = designThemeSelect.value;
 
+      // Resolusi Canvas HD agar hasil cetak 100% tajam
       const renderCanvas = document.createElement('canvas');
-      const isA6 = (sizeMode === 'a6-4');
-      renderCanvas.width = 1000;
-      renderCanvas.height = isA6 ? 1380 : 1000;
+      renderCanvas.width = 1100;
+      renderCanvas.height = Math.round(1100 * (layout.boxH / layout.boxW));
 
-      // MODE 1: File Satuan 10x10 cm
-      if (sizeMode === 'single-10x10') {
-        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [100, 100] });
+      const orientation = layout.pageW > layout.pageH ? 'landscape' : 'portrait';
+      const doc = new jsPDF({
+        orientation: orientation,
+        unit: 'mm',
+        format: [layout.pageW, layout.pageH]
+      });
+
+      // MODE 1: Dipisah Per Desain (1 Halaman = 1 Desain Pas Ukuran)
+      if (layout.mode === 'single') {
         for (let i = 0; i < cardIds.length; i++) {
-          if (i > 0) doc.addPage([100, 100], 'portrait');
+          if (i > 0) doc.addPage([layout.pageW, layout.pageH], orientation);
           const id = cardIds[i];
           const qrDataUrl = await generateQRDataURL(`${BASE_CLIENT_URL}?id=${id}`);
           const qrImg = await loadImageElement(qrDataUrl);
           renderCardDesignToCanvas(renderCanvas, theme, id, qrImg);
-          doc.addImage(renderCanvas.toDataURL('image/jpeg', 0.96), 'JPEG', 0, 0, 100, 100);
+          doc.addImage(renderCanvas.toDataURL('image/jpeg', 0.96), 'JPEG', 0, 0, layout.boxW, layout.boxH);
         }
-        doc.save(`Kreatifedia-Satuan-10x10cm-${cardIds[0]}-sd-${cardIds[cardIds.length - 1]}.pdf`);
+        doc.save(`Kreatifedia-Satuan-${(layout.boxW/10)}x${(layout.boxH/10)}cm-${cardIds[0]}-sd-${cardIds[cardIds.length - 1]}.pdf`);
         await markBatchAsPrinted(cardIds);
         return;
       }
 
-      // MODE 2: Lembaran Besar A3+ (320 x 480 mm) - Muat 12 Kotak Ukuran FULL 10x10 cm!
-      if (sizeMode === 'a3-square-10') {
-        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [320, 480] });
-        const cols = 3, rowsPerPage = 4, boxW = 100, boxH = 100, startX = 7, startY = 18, gapX = 3, gapY = 12;
-        const itemsPerPage = cols * rowsPerPage;
-
-        for (let i = 0; i < cardIds.length; i++) {
-          if (i > 0 && i % itemsPerPage === 0) doc.addPage([320, 480], 'portrait');
-          const pageIdx = i % itemsPerPage;
-          const col = pageIdx % cols;
-          const row = Math.floor(pageIdx / cols);
-          const x = startX + col * (boxW + gapX);
-          const y = startY + row * (boxH + gapY);
-
-          const id = cardIds[i];
-          const qrDataUrl = await generateQRDataURL(`${BASE_CLIENT_URL}?id=${id}`);
-          const qrImg = await loadImageElement(qrDataUrl);
-          renderCardDesignToCanvas(renderCanvas, theme, id, qrImg);
-          doc.addImage(renderCanvas.toDataURL('image/jpeg', 0.95), 'JPEG', x, y, boxW, boxH);
-          doc.setDrawColor(180, 180, 180);
-          doc.setLineWidth(0.2);
-          doc.rect(x, y, boxW, boxH, 'S');
-        }
-        doc.save(`Kreatifedia-A3Plus-10x10cm-${cardIds[0]}-sd-${cardIds[cardIds.length - 1]}.pdf`);
-        await markBatchAsPrinted(cardIds);
-        return;
-      }
-
-      // MODE 3: Lembaran Kertas A4 (210 x 297 mm)
-      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-      let cols = 2, rowsPerPage = 2, boxW = 100, boxH = 100, startX = 4, startY = 25, gapX = 2, gapY = 15;
-
-      if (sizeMode === 'a4-square-10') {
-        // 4 Kotak Ukuran FULL 10 x 10 cm (100 x 100 mm) di atas Kertas A4!
-        cols = 2; rowsPerPage = 2; boxW = 100; boxH = 100; startX = 4; startY = 35; gapX = 2; gapY = 15;
-      } else if (sizeMode === 'a4-square-95') {
-        // 4 Kotak Ukuran 9.5 x 9.5 cm (Ada List Tepi 2.5mm di sekeliling akrilik 10x10)
-        cols = 2; rowsPerPage = 2; boxW = 95; boxH = 95; startX = 7.5; startY = 40; gapX = 5; gapY = 15;
-      } else if (sizeMode === 'square-6') {
-        // 6 Kotak Ukuran 9.2 x 9.2 cm
-        cols = 2; rowsPerPage = 3; boxW = 92; boxH = 92; startX = 10; startY = 8; gapX = 6; gapY = 5;
-      } else if (sizeMode === 'a6-4') {
-        cols = 2; rowsPerPage = 2; boxW = 95; boxH = 135; startX = 7; startY = 10; gapX = 6; gapY = 7;
-      }
-      const itemsPerPage = cols * rowsPerPage;
-
+      // MODE 2: Digabung dalam Lembaran Kertas (A3+ Shopee / A4 / A5)
       for (let i = 0; i < cardIds.length; i++) {
-        if (i > 0 && i % itemsPerPage === 0) doc.addPage();
+        if (i > 0 && i % layout.perPage === 0) {
+          doc.addPage([layout.pageW, layout.pageH], orientation);
+        }
 
-        const pageIdx = i % itemsPerPage;
-        const col = pageIdx % cols;
-        const row = Math.floor(pageIdx / cols);
-        const x = startX + col * (boxW + gapX);
-        const y = startY + row * (boxH + gapY);
+        const pageIdx = i % layout.perPage;
+        const col = pageIdx % layout.cols;
+        const row = Math.floor(pageIdx / layout.cols);
+        const x = layout.startX + col * (layout.boxW + layout.gap);
+        const y = layout.startY + row * (layout.boxH + layout.gap);
 
         const id = cardIds[i];
         const qrDataUrl = await generateQRDataURL(`${BASE_CLIENT_URL}?id=${id}`);
         const qrImg = await loadImageElement(qrDataUrl);
 
         renderCardDesignToCanvas(renderCanvas, theme, id, qrImg);
-        const cardDataUrl = renderCanvas.toDataURL('image/jpeg', 0.95);
+        doc.addImage(renderCanvas.toDataURL('image/jpeg', 0.96), 'JPEG', x, y, layout.boxW, layout.boxH);
 
-        doc.addImage(cardDataUrl, 'JPEG', x, y, boxW, boxH);
-        doc.setDrawColor(190, 190, 190);
+        // Garis bantu potong tipis (Cut Line untuk mesin Kiss-Cut percetakan)
+        doc.setDrawColor(180, 180, 180);
         doc.setLineWidth(0.2);
-        doc.rect(x, y, boxW, boxH, 'S');
+        doc.rect(x, y, layout.boxW, layout.boxH, 'S');
       }
 
-      doc.save(`Kreatifedia-${sizeMode}-${cardIds[0]}-sd-${cardIds[cardIds.length - 1]}.pdf`);
+      const paperName = paperFormatSelect.value.toUpperCase();
+      doc.save(`Kreatifedia-${paperName}-${(layout.boxW/10)}x${(layout.boxH/10)}cm-${cardIds[0]}-sd-${cardIds[cardIds.length - 1]}.pdf`);
       await markBatchAsPrinted(cardIds);
     }
 
     window.downloadSinglePNG = async function(id) {
+      const layout = calculateSheetLayout();
       const renderCanvas = document.createElement('canvas');
       renderCanvas.width = 1200;
-      renderCanvas.height = 1200;
+      renderCanvas.height = Math.round(1200 * (layout.boxH / layout.boxW));
 
       const qrDataUrl = await generateQRDataURL(`${BASE_CLIENT_URL}?id=${id}`);
       const qrImg = await loadImageElement(qrDataUrl);
@@ -840,7 +890,8 @@
           if (!isNaN(num) && num > maxNum) maxNum = num;
         });
 
-        const batchCount = 4;
+        const layout = calculateSheetLayout();
+        const batchCount = (layout && layout.perPage > 1) ? layout.perPage : 10;
         const newBatch = [];
         for (let i = 1; i <= batchCount; i++) {
           const formattedId = String(maxNum + i).padStart(3, '0');
